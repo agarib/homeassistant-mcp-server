@@ -1,0 +1,178 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcpo-server
+  namespace: cluster-services
+  labels:
+    app: mcpo-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcpo-server
+  template:
+    metadata:
+      labels:
+        app: mcpo-server
+    spec:
+      # Init container to setup Home Assistant MCP Server
+      initContainers:
+        - name: setup-homeassistant-mcp
+          image: ghcr.io/open-webui/mcpo:main
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -e
+              echo "ðŸ  Setting up Home Assistant MCP Server..."
+
+              # Create directory structure
+              mkdir -p /workspace/homeassistant-mcp
+
+              # Copy server.py from ConfigMap mount
+              if [ -f /mcp-servers/homeassistant/server.py ]; then
+                cp /mcp-servers/homeassistant/server.py /workspace/homeassistant-mcp/
+                chmod +x /workspace/homeassistant-mcp/server.py
+                echo "âœ… server.py copied successfully"
+              else
+                echo "âš ï¸  Warning: server.py not found in ConfigMap"
+                exit 1
+              fi
+
+              # Verify file exists and is readable
+              if [ -s /workspace/homeassistant-mcp/server.py ]; then
+                echo "âœ… server.py verified ($(wc -l < /workspace/homeassistant-mcp/server.py) lines)"
+              else
+                echo "âŒ Error: server.py is empty or missing"
+                exit 1
+              fi
+
+              echo "âœ… Home Assistant MCP Server setup complete!"
+              echo "ðŸ“„ Files in /workspace/homeassistant-mcp:"
+              ls -lh /workspace/homeassistant-mcp/
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+            - name: homeassistant-mcp-code
+              mountPath: /mcp-servers/homeassistant
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+
+      # Main MCPO container
+      containers:
+        - name: mcpo
+          image: ghcr.io/open-webui/mcpo:main
+          command: ["/bin/bash"]
+          args:
+            - -c
+            - |
+              set -e
+              echo "ðŸš€ Starting Open-WebUI MCPO Server..."
+
+              # Install uv and Node.js for MCP servers
+              curl -LsSf https://astral.sh/uv/install.sh | sh
+              export PATH="/root/.local/bin:$PATH"
+
+              # Install Node.js for npm/npx
+              curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+              apt-get install -y nodejs
+
+              # Install Puppeteer dependencies for browser automation
+              apt-get install -y \
+                chromium \
+                chromium-sandbox \
+                fonts-liberation \
+                libasound2 \
+                libatk-bridge2.0-0 \
+                libatk1.0-0 \
+                libcups2 \
+                libdbus-1-3 \
+                libgbm1 \
+                libgtk-3-0 \
+                libnspr4 \
+                libnss3 \
+                libx11-xcb1 \
+                libxcomposite1 \
+                libxdamage1 \
+                libxrandr2 \
+                xdg-utils
+
+              # Set Puppeteer to use installed Chromium
+              export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+              export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+              # Verify Home Assistant MCP Server is ready
+              if [ -f /workspace/homeassistant-mcp/server.py ]; then
+                echo "âœ… Home Assistant MCP Server ready at /workspace/homeassistant-mcp/server.py"
+                
+                # Install Python dependencies for Home Assistant MCP
+                echo "ðŸ“¦ Installing Home Assistant MCP dependencies..."
+                # Use venv's Python directly with pip module to install into venv
+                /app/.venv/bin/python -m pip install --no-cache-dir -q \
+                  mcp \
+                  httpx \
+                  pyyaml \
+                  python-dotenv \
+                  pydantic \
+                  python-dateutil \
+                  asyncio-mqtt \
+                  paramiko
+                echo "âœ… Dependencies installed"
+              else
+                echo "âš ï¸  Warning: Home Assistant MCP Server not found - will be unavailable"
+              fi
+
+              # Start MCPO with config file
+              echo "ðŸ”§ Using config file for multiple MCP servers..."
+              mcpo --config /config/config.json --port 8000 --api-key "openapi-tools-secret" --hot-reload
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: UV_SYSTEM_PYTHON
+              value: "1"
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+          livenessProbe:
+            httpGet:
+              path: /docs
+              port: 8000
+            initialDelaySeconds: 600
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: 8000
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: mcpo-config
+              mountPath: /config
+            - name: workspace
+              mountPath: /workspace
+
+      # Node selector - run on masterpi
+      nodeSelector:
+        kubernetes.io/hostname: masterpi
+
+      # Volumes
+      volumes:
+        - name: mcpo-config
+          configMap:
+            name: mcpo-config
+        - name: workspace
+          emptyDir:
+            sizeLimit: 10Gi
+        - name: homeassistant-mcp-code
+          configMap:
+            name: homeassistant-mcp-server

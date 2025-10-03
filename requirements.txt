@@ -1,0 +1,10 @@
+﻿# Home Assistant MCP Server Dependencies
+mcp>=1.0.0
+httpx>=0.27.0
+pyyaml>=6.0.0
+paramiko>=4.0.0
+python-dateutil>=2.9.0
+asyncio-mqtt>=0.16.0
+paho-mqtt>=2.1.0
+pynacl>=1.6.0
+cryptography>=42.0.0
