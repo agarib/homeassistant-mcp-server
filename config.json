@@ -1,0 +1,32 @@
+{
+  "name": "Home Assistant MCP Server",
+  "version": "1.0.0",
+  "slug": "ha-mcp-server",
+  "description": "Native MCP server running inside Home Assistant with direct file system and API access",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "application",
+  "boot": "auto",
+  "init": false,
+  "map": ["config:rw"],
+  "options": {
+    "port": 8001,
+    "log_level": "info"
+  },
+  "schema": {
+    "port": "port",
+    "log_level": "list(debug|info|warning|error|critical)"
+  },
+  "ports": {
+    "8001/tcp": 8001
+  },
+  "ports_description": {
+    "8001/tcp": "MCP Server HTTP endpoint"
+  },
+  "homeassistant_api": true,
+  "hassio_api": true,
+  "hassio_role": "default",
+  "auth_api": false,
+  "ingress": false,
+  "panel_icon": "mdi:server-network",
+  "panel_title": "MCP Server"
+}

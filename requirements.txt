@@ -1,0 +1,12 @@
+httpx>=0.27.0
+mcp>=1.0.0
+aiofiles>=23.2.1
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
+uvicorn>=0.30.0
+starlette>=0.37.0
+# Data analysis libraries for code execution tools
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
