@@ -1,0 +1,33 @@
+﻿# Sensitive files
+*.token
+*.key
+*.pem
+*_credentials.yaml
+*_secrets.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local configuration
+mcpo-config.yaml
