@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "Home Assistant MCP Server",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "slug": "ha-mcp-server",
   "description": "Native MCP server running inside Home Assistant with direct file system and API access",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],

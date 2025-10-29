@@ -85,7 +85,7 @@ ls \\192.168.1.203\config\addons\local\ha-mcp-server
         "HA_SSH_HOST": "192.168.1.203",
         "HA_SSH_PORT": "22",
         "HA_SSH_USER": "root",
-        "HA_SSH_PASSWORD": "AgAGarib122728",
+        "HA_SSH_PASSWORD": "your_ssh_password",
         "HA_CONFIG_PATH": "/config",
       },
   }
@@ -240,7 +240,7 @@ kubectl logs -n cluster-services mcpo-server-0 | Select-String "homeassistant"
         "HA_SSH_HOST": "192.168.1.203", # Network dependency
         "HA_SSH_PORT": "22", # Service dependency
         "HA_SSH_USER": "root", # Authentication
-        "HA_SSH_PASSWORD": "AgAGarib122728", # Security risk
+        "HA_SSH_PASSWORD": "your_ssh_password", # Security risk
         "HA_CONFIG_PATH": "/config",
       },
   }

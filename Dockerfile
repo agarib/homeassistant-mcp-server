@@ -17,8 +17,7 @@ COPY requirements.txt .
 # Install Python dependencies using --break-system-packages for Alpine Python
 RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
 
-# Copy server code
-COPY server.py .
+# Copy ONLY run.sh - server.py will be mounted from /config at runtime
 COPY run.sh .
 
 # Make run script executable

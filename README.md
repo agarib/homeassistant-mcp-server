@@ -189,7 +189,7 @@ Your current `mcpo-config-updated.yaml` has:
         "HA_SSH_HOST": "192.168.1.203",
         "HA_SSH_PORT": "22",
         "HA_SSH_USER": "root",
-        "HA_SSH_PASSWORD": "AgAGarib122728",
+        "HA_SSH_PASSWORD": "your_ssh_password",
         "HA_CONFIG_PATH": "/config",
       },
   }
