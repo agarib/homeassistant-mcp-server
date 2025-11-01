@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 4.0.0
+Version: 4.0.1
 Date: November 1, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
@@ -89,7 +89,7 @@ import base64
 import io
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # FastAPI and Pydantic
 from fastapi import FastAPI, HTTPException, Body, Query
@@ -3909,27 +3909,41 @@ async def get_system_logs_diagnostics(request: GetSystemLogsNewRequest = Body(..
     }
     """
     try:
-        # Use Home Assistant error log API
-        url = f"{HA_URL}/api/error_log"
-        response = await http_client.get(url)
+        # Use logbook to get recent events and errors
+        # This is more reliable than trying to access log files directly
+        url = f"{HA_URL}/logbook"
+        params = {}
+        response = await http_client.get(url, params=params)
         response.raise_for_status()
         
-        full_log = response.text
-        log_lines = full_log.split('\n')
+        logbook_entries = response.json()
         
-        # Filter by level if specified
+        # Filter for error-like entries if level specified
         if request.level:
-            log_lines = [line for line in log_lines if request.level.upper() in line.upper()]
+            level_upper = request.level.upper()
+            if level_upper in ["ERROR", "WARNING"]:
+                # Look for entries that might be errors/warnings
+                logbook_entries = [
+                    entry for entry in logbook_entries
+                    if any(keyword in str(entry).lower() for keyword in ["error", "fail", "warning", "problem"])
+                ]
         
-        # Return last N lines
-        log_lines = log_lines[-request.lines:]
+        # Limit to requested number of entries
+        logbook_entries = logbook_entries[-request.lines:]
+        
+        # Format as log-like messages
+        log_lines = [
+            f"{entry.get('when', '')} - {entry.get('domain', '')} - {entry.get('name', '')} - {entry.get('message', '')}"
+            for entry in logbook_entries
+        ]
         
         return SuccessResponse(
-            message=f"Retrieved {len(log_lines)} log entries" + (f" (level: {request.level})" if request.level else ""),
+            message=f"Retrieved {len(log_lines)} logbook entries" + (f" (filter: {request.level})" if request.level else ""),
             data={
                 "log_lines": log_lines,
                 "count": len(log_lines),
-                "level_filter": request.level
+                "level_filter": request.level,
+                "note": "Showing logbook entries (event history). For full system logs, check HA System Log integration."
             }
         )
     except Exception as e:
@@ -3985,49 +3999,61 @@ class GetIntegrationStatusNewRequest(BaseModel):
 @app.post("/get_integration_status", summary="Check integration health", tags=["system_diagnostics"])
 async def get_integration_status(request: GetIntegrationStatusNewRequest = Body(...)):
     """
-    Check status of Home Assistant integrations.
+    Check status of Home Assistant integrations by analyzing loaded components.
     
     **DETECTS:**
-    - Failed integrations
-    - Configuration errors
-    - API connection issues
-    - Update availability
+    - Loaded integrations/components
+    - Available domains
+    - Component availability
     
     Example: {
         "integration": "lg"
     }
+    
+    **NOTE:** This shows loaded components. For detailed config entries, use HA UI or admin token.
     """
     try:
-        # Get config entries (integrations)
-        url = f"{HA_URL}/api/config/config_entries/entry"
+        # Get HA configuration which includes loaded components
+        url = f"{HA_URL}/config"
         response = await http_client.get(url)
         response.raise_for_status()
         
-        entries = response.json()
+        config = response.json()
+        components = config.get("components", [])
         
         # Filter if specific integration requested
         if request.integration:
-            entries = [e for e in entries if request.integration.lower() in e.get("domain", "").lower()]
-        
-        integration_status = [
-            {
-                "domain": entry.get("domain"),
-                "title": entry.get("title"),
-                "state": entry.get("state"),
-                "entry_id": entry.get("entry_id"),
-                "disabled_by": entry.get("disabled_by"),
-                "supports_options": entry.get("supports_options", False)
-            }
-            for entry in entries
-        ]
-        
-        return SuccessResponse(
-            message=f"Found {len(integration_status)} integrations",
-            data={
-                "integrations": integration_status,
-                "count": len(integration_status)
-            }
-        )
+            search_term = request.integration.lower()
+            matching_components = [c for c in components if search_term in c.lower()]
+            
+            # Also check states for entities from this integration
+            states = await ha_api.get_states()
+            integration_entities = [
+                s["entity_id"] for s in states
+                if any(search_term in part.lower() for part in s["entity_id"].split("."))
+            ]
+            
+            return SuccessResponse(
+                message=f"Integration '{request.integration}' analysis",
+                data={
+                    "integration": request.integration,
+                    "loaded": len(matching_components) > 0,
+                    "matching_components": matching_components,
+                    "entity_count": len(integration_entities),
+                    "sample_entities": integration_entities[:10],
+                    "note": "Shows loaded components and entities. Use persistent_notifications for errors."
+                }
+            )
+        else:
+            # Return all components
+            return SuccessResponse(
+                message=f"Found {len(components)} loaded components",
+                data={
+                    "components": sorted(components),
+                    "count": len(components),
+                    "note": "These are all loaded HA components. Specify 'integration' parameter to filter."
+                }
+            )
     except Exception as e:
         logger.error(f"Error getting integration status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -4037,39 +4063,53 @@ async def get_integration_status(request: GetIntegrationStatusNewRequest = Body(
 @app.post("/get_startup_errors", summary="Get startup errors", tags=["system_diagnostics"])
 async def get_startup_errors():
     """
-    Get errors from last Home Assistant restart.
+    Get errors from last Home Assistant restart via persistent notifications.
     
     **SHOWS:**
-    - Configuration errors
-    - Integration load failures
-    - Component initialization issues
-    - Platform setup errors
+    - Configuration errors (via notifications)
+    - Integration load failures (via notifications)
+    - Component initialization issues (via notifications)
+    - Recent logbook errors
     
     **Perfect for debugging after HA restarts!**
+    
+    **NOTE:** Combines persistent notifications + recent logbook entries to find startup issues.
     """
     try:
-        # Get error log and parse for startup errors
-        url = f"{HA_URL}/api/error_log"
+        # Get persistent notifications (these often contain startup errors)
+        states = await ha_api.get_states()
+        notifications = [
+            {
+                "notification_id": s["entity_id"].replace("persistent_notification.", ""),
+                "title": s.get("attributes", {}).get("title", ""),
+                "message": s.get("attributes", {}).get("message", ""),
+                "created_at": s.get("last_changed")
+            }
+            for s in states
+            if s["entity_id"].startswith("persistent_notification.")
+        ]
+        
+        # Also get recent logbook entries that might indicate startup issues
+        url = f"{HA_URL}/logbook"
         response = await http_client.get(url)
         response.raise_for_status()
+        logbook_entries = response.json()
         
-        full_log = response.text
-        log_lines = full_log.split('\n')
-        
-        # Look for startup-related errors (last 500 lines typically cover startup)
-        startup_keywords = ['setup', 'init', 'load', 'start', 'bootstrap', 'ERROR', 'CRITICAL']
-        startup_errors = []
-        
-        for line in log_lines[-500:]:  # Check last 500 lines
-            if any(keyword in line.upper() for keyword in startup_keywords):
-                if 'ERROR' in line.upper() or 'CRITICAL' in line.upper():
-                    startup_errors.append(line)
+        # Look for startup-related entries
+        startup_keywords = ["start", "restart", "reload", "init", "setup", "error", "fail"]
+        startup_entries = [
+            entry for entry in logbook_entries[-100:]  # Last 100 entries
+            if any(keyword in str(entry).lower() for keyword in startup_keywords)
+        ]
         
         return SuccessResponse(
-            message=f"Found {len(startup_errors)} startup-related errors",
+            message=f"Found {len(notifications)} persistent notifications and {len(startup_entries)} recent startup-related events",
             data={
-                "startup_errors": startup_errors[-100:],  # Last 100 errors
-                "count": len(startup_errors)
+                "persistent_notifications": notifications,
+                "notification_count": len(notifications),
+                "recent_startup_events": startup_entries[-50:],  # Last 50
+                "startup_event_count": len(startup_entries),
+                "note": "Check persistent_notifications for integration errors. Recent events show system activity."
             }
         )
     except Exception as e:
@@ -4087,8 +4127,8 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "4.0.0",
-        "timestamp": datetime.utcnow().isoformat()
+        "version": "4.0.1",
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
@@ -4097,7 +4137,7 @@ async def root():
     """Root endpoint with API information"""
     return {
         "name": "Home Assistant OpenAPI Server",
-        "version": "4.0.0",
+        "version": "4.0.1",
         "description": "85 unified endpoints for Home Assistant control (8 native MCPO + 4 diagnostics + 73 production)",
         "docs": "/docs",
         "openapi": "/openapi.json",
