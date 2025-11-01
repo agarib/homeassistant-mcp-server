@@ -661,7 +661,9 @@ MIT License - See main repository LICENSE file
 
 ## 🚀 Quick Links
 
+- **[AI_TRAINING_GUIDE.md](AI_TRAINING_GUIDE.md)** - 🤖 Comprehensive guide for AI assistants (all 85 tools)
 - **[CHANGELOG.md](CHANGELOG.md)** - What's new in v4.0.1
+- **[V4.0.1_CRITICAL_FIXES.md](V4.0.1_CRITICAL_FIXES.md)** - Critical fixes documentation
 - **[ADDON_DEPLOYMENT_GUIDE.md](ADDON_DEPLOYMENT_GUIDE.md)** - Complete deployment guide with troubleshooting
 - **[V4_QUICK_REFERENCE.md](V4_QUICK_REFERENCE.md)** - Quick reference card
 - **[NEW_TOOLS_REFERENCE.md](NEW_TOOLS_REFERENCE.md)** - Tool documentation
