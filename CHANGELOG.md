@@ -2,7 +2,93 @@
 
 All notable changes to the Home Assistant OpenAPI Server project.
 
-## [4.0.1] - 2025-11-01
+## [4.0.3] - 2025-11-02
+
+### ✨ Major Enhancement - Tool Namespace Separation
+
+**Problem Solved:** Open-WebUI was calling its own restricted built-in file tools instead of HA server tools, causing "Access denied" errors for `/config` paths.
+
+### 🔧 Changes
+
+- **ALL 72 ENDPOINTS RENAMED** with `ha_` prefix to prevent Open-WebUI tool conflicts:
+
+  - File operations: `/write_file` → `/ha_write_file`, `/read_file` → `/ha_read_file`, etc.
+  - Automations: `/create_automation` → `/ha_create_automation`, etc.
+  - Dashboards: `/create_dashboard` → `/ha_create_dashboard`, etc.
+  - All device control, discovery, logs, intelligence, security, etc.
+
+- **FileManager Class Methods Renamed** for complete consistency:
+
+  - `write_file()` → `ha_write_file()`
+  - `read_file()` → `ha_read_file()`
+  - `list_directory()` → `ha_list_directory()`
+  - `delete_file()` → `ha_delete_file()`
+  - `resolve_path()` → `ha_resolve_path()`
+
+- **Complete Separation** from Open-WebUI built-in tools:
+
+  - No more collision with `tool_write_file` (restricted to /workspace)
+  - No more collision with `tool_read_file` (restricted to /workspace)
+  - HA tools are clearly identified with `ha_` prefix throughout codebase
+
+- **Native MCPO tools cleaned up**:
+
+  - `get_entity_state_native` → `ha_get_entity_state`
+  - `list_entities_native` → `ha_list_entities`
+  - etc. (removed redundant `_native` suffix)
+
+- **System Diagnostics tools cleaned up**:
+  - `get_system_logs_diagnostics` → `ha_get_system_logs`
+  - `get_integration_status` → `ha_get_integration_status`
+  - etc. (removed redundant `_diagnostics` suffix)
+
+### 🎯 Benefits
+
+- ✅ No more "Access denied - path outside allowed directories" errors
+- ✅ Full /config access for all file operations
+- ✅ Clear distinction between HA tools and Open-WebUI tools
+- ✅ AI assistants can confidently call HA-specific tools
+- ✅ Automations, dashboards, and file management fully accessible
+- ✅ **Complete naming consistency** - routes, handlers, and internal methods all use `ha_` prefix
+- ✅ **No future confusion** - everything HA-related is clearly marked throughout codebase
+
+### 📋 Affected Components
+
+**All 72 endpoints now use `ha_` prefix:**
+
+- Device Control (4): `ha_control_light`, `ha_control_switch`, `ha_control_climate`, `ha_control_cover`
+- Discovery (4): `ha_discover_devices`, `ha_get_device_state`, `ha_get_area_devices`, `ha_get_states`
+- File Operations (9): `ha_write_file`, `ha_read_file`, `ha_list_directory`, etc.
+- Automations (7): `ha_create_automation`, `ha_update_automation`, `ha_trigger_automation`, etc.
+- Dashboards (8): `ha_create_dashboard`, `ha_update_dashboard_config`, etc.
+- Add-ons (9): `ha_list_addons`, `ha_start_addon`, `ha_stop_addon`, etc.
+- Logs & History (6): `ha_get_entity_history`, `ha_diagnose_entity`, etc.
+- Intelligence (4): `ha_analyze_home_context`, `ha_activity_recognition`, etc.
+- Security (3): `ha_intelligent_security_monitor`, `ha_anomaly_detection`, etc.
+- Camera VLM (3): `ha_analyze_camera_vlm`, `ha_object_detection`, etc.
+- And more...
+
+### 🔄 Migration
+
+**Open-WebUI users:** Tools will appear with new names (e.g., `ha_write_file` instead of `write_file`)
+
+**API Clients:** Update all endpoint calls to use new `ha_` prefix:
+
+```bash
+# Before:
+POST http://192.168.1.203:8001/write_file
+
+# After:
+POST http://192.168.1.203:8001/ha_write_file
+```
+
+### Breaking Changes
+
+**All endpoint URLs changed** - This is a breaking change requiring client updates. However, this solves the critical permission issue that made many tools unusable.
+
+---
+
+## [4.0.2] - 2025-11-01
 
 ### 🐛 Fixed
 

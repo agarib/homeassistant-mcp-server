@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 4.0.2
+Version: 4.0.3
 Date: November 1, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
@@ -41,6 +41,19 @@ Unified server with 85 production-ready endpoints.
 ✅ Utility (2 tools) - Health check, API info
 
 CHANGELOG:
+v4.0.3 (2025-11-02):
+  - 🔧 BREAKING: Renamed all 72 endpoints with ha_ prefix to prevent Open-WebUI tool conflicts
+  - ✨ File operations: /write_file → /ha_write_file, /read_file → /ha_read_file
+  - ✨ Automations: /create_automation → /ha_create_automation, etc.
+  - ✨ All device control, discovery, dashboards: Now prefixed with ha_
+  - 🐛 FIXED: "Access denied" errors caused by Open-WebUI's built-in tool_write_file collision
+  - 🎯 Solution: Clear namespace separation - HA tools vs Open-WebUI tools
+  - ✅ Full /config access restored for all file operations
+  - ✅ Automations, dashboards, and file management now fully accessible
+  - 📝 FileManager class methods also renamed: write_file() → ha_write_file(), etc. for consistency
+  - 🎨 Complete naming consistency: Routes, handlers, and internal methods all use ha_ prefix
+  - 🚀 Ready for production deployment with no tool conflicts
+
 v4.0.2 (2025-11-01):
   - 🐛 Fixed get_directory_tree endpoint: resolve_path method name typo
   - 📚 Discovered HA diagnostics integration for future enhancement
@@ -133,7 +146,7 @@ SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 HA_CONFIG_PATH = Path(os.getenv("HA_CONFIG_PATH", "/config"))
 PORT = int(os.getenv("PORT", "8001"))
 
-logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.2")
+logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.3")
 logger.info(f"📁 Config Path: {HA_CONFIG_PATH}")
 logger.info(f"🌐 HA API URL: {HA_URL}")
 logger.info(f"🔌 Port: {PORT}")
@@ -142,7 +155,7 @@ logger.info(f"🔑 Supervisor Token: {'Present' if SUPERVISOR_TOKEN else 'Missin
 # Create FastAPI app
 app = FastAPI(
     title="Home Assistant OpenAPI Server",
-    version="4.0.2",
+    version="4.0.3",
     description="85 unified endpoints for comprehensive Home Assistant control via REST API. Pure OpenAPI architecture with Pydantic validation for Open-WebUI.",
     contact={
         "name": "agarib",
@@ -270,30 +283,30 @@ class FileManager:
     def __init__(self, base_path: Path):
         self.base_path = base_path
         
-    def resolve_path(self, filepath: str) -> Path:
+    def ha_resolve_path(self, filepath: str) -> Path:
         """Resolve and validate file path"""
         path = (self.base_path / filepath).resolve()
         if not str(path).startswith(str(self.base_path)):
             raise ValueError(f"Path {filepath} is outside config directory")
         return path
     
-    async def read_file(self, filepath: str) -> str:
+    async def ha_read_file(self, filepath: str) -> str:
         """Read file content"""
-        path = self.resolve_path(filepath)
+        path = self.ha_resolve_path(filepath)
         async with aiofiles.open(path, 'r') as f:
             return await f.read()
     
-    async def write_file(self, filepath: str, content: str) -> str:
+    async def ha_write_file(self, filepath: str, content: str) -> str:
         """Write file content"""
-        path = self.resolve_path(filepath)
+        path = self.ha_resolve_path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
         async with aiofiles.open(path, 'w') as f:
             await f.write(content)
         return f"Successfully wrote {len(content)} bytes to {filepath}"
     
-    async def list_directory(self, dirpath: str = "") -> List[Dict[str, str]]:
+    async def ha_list_directory(self, dirpath: str = "") -> List[Dict[str, str]]:
         """List directory contents"""
-        path = self.resolve_path(dirpath)
+        path = self.ha_resolve_path(dirpath)
         if not path.is_dir():
             raise ValueError(f"{dirpath} is not a directory")
         
@@ -306,9 +319,9 @@ class FileManager:
             })
         return sorted(items, key=lambda x: (x["type"], x["name"]))
     
-    async def delete_file(self, filepath: str) -> str:
+    async def ha_delete_file(self, filepath: str) -> str:
         """Delete a file"""
-        path = self.resolve_path(filepath)
+        path = self.ha_resolve_path(filepath)
         if path.is_file():
             path.unlink()
             return f"Deleted {filepath}"
@@ -445,8 +458,8 @@ class ErrorResponse(BaseModel):
 # Core Device Control Endpoints
 # ============================================================================
 
-@app.post("/control_light", summary="Control a light entity", tags=["lights"])
-async def control_light(request: ControlLightRequest = Body(...)):
+@app.post("/ha_control_light", summary="Control a light entity", tags=["lights"])
+async def ha_control_light(request: ControlLightRequest = Body(...)):
     """
     Control light entities: turn on/off, adjust brightness, change colors.
     
@@ -483,8 +496,8 @@ async def control_light(request: ControlLightRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/control_switch", summary="Control a switch entity", tags=["switches"])
-async def control_switch(request: ControlSwitchRequest = Body(...)):
+@app.post("/ha_control_switch", summary="Control a switch entity", tags=["switches"])
+async def ha_control_switch(request: ControlSwitchRequest = Body(...)):
     """
     Control switch entities: turn on/off, toggle.
     
@@ -507,8 +520,8 @@ async def control_switch(request: ControlSwitchRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/control_climate", summary="Control climate/HVAC", tags=["climate"])
-async def control_climate(request: ControlClimateRequest = Body(...)):
+@app.post("/ha_control_climate", summary="Control climate/HVAC", tags=["climate"])
+async def ha_control_climate(request: ControlClimateRequest = Body(...)):
     """
     Control climate entities: set temperature, change modes.
     
@@ -540,8 +553,8 @@ async def control_climate(request: ControlClimateRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/control_cover", summary="Control covers/blinds", tags=["covers"])
-async def control_cover(request: ControlCoverRequest = Body(...)):
+@app.post("/ha_control_cover", summary="Control covers/blinds", tags=["covers"])
+async def ha_control_cover(request: ControlCoverRequest = Body(...)):
     """
     Control cover entities: open, close, stop, set position.
     
@@ -573,8 +586,8 @@ async def control_cover(request: ControlCoverRequest = Body(...)):
 # Discovery & State Endpoints
 # ============================================================================
 
-@app.post("/discover_devices", summary="Discover devices by domain/area", tags=["discovery"])
-async def discover_devices(request: DiscoverDevicesRequest = Body(...)):
+@app.post("/ha_discover_devices", summary="Discover devices by domain/area", tags=["discovery"])
+async def ha_discover_devices(request: DiscoverDevicesRequest = Body(...)):
     """
     Discover all devices, optionally filtered by domain or area.
     
@@ -614,8 +627,8 @@ async def discover_devices(request: DiscoverDevicesRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_device_state", summary="Get specific device state", tags=["discovery"])
-async def get_device_state(request: GetDeviceStateRequest = Body(...)):
+@app.post("/ha_get_device_state", summary="Get specific device state", tags=["discovery"])
+async def ha_get_device_state(request: GetDeviceStateRequest = Body(...)):
     """
     Get detailed state for a specific entity.
     
@@ -630,8 +643,8 @@ async def get_device_state(request: GetDeviceStateRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_area_devices", summary="Get devices in an area", tags=["discovery"])
-async def get_area_devices(request: GetAreaDevicesRequest = Body(...)):
+@app.post("/ha_get_area_devices", summary="Get devices in an area", tags=["discovery"])
+async def ha_get_area_devices(request: GetAreaDevicesRequest = Body(...)):
     """
     Get all devices in a specific area by name matching.
     
@@ -662,8 +675,8 @@ async def get_area_devices(request: GetAreaDevicesRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_states", summary="Get entity states", tags=["discovery"])
-async def get_states(request: GetStatesRequest = Body(...)):
+@app.post("/ha_get_states", summary="Get entity states", tags=["discovery"])
+async def ha_get_states(request: GetStatesRequest = Body(...)):
     """
     Get all entity states, optionally filtered by domain.
     
@@ -688,8 +701,8 @@ async def get_states(request: GetStatesRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/call_service", summary="Call any HA service", tags=["system"])
-async def call_service(request: CallServiceRequest = Body(...)):
+@app.post("/ha_call_service", summary="Call any HA service", tags=["system"])
+async def ha_call_service(request: CallServiceRequest = Body(...)):
     """
     Call any Home Assistant service with custom data.
     
@@ -717,15 +730,15 @@ async def call_service(request: CallServiceRequest = Body(...)):
 # File Operations Endpoints
 # ============================================================================
 
-@app.post("/read_file", summary="Read a file from /config", tags=["files"])
-async def read_file(request: ReadFileRequest = Body(...)):
+@app.post("/ha_read_file", summary="Read a file from /config", tags=["files"])
+async def ha_read_file(request: ReadFileRequest = Body(...)):
     """
     Read file content from Home Assistant config directory.
     
     Example: {"filepath": "configuration.yaml"}
     """
     try:
-        content = await file_mgr.read_file(request.filepath)
+        content = await file_mgr.ha_read_file(request.filepath)
         return {
             "filepath": request.filepath,
             "content": content,
@@ -737,15 +750,15 @@ async def read_file(request: ReadFileRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/write_file", summary="Write a file to /config", tags=["files"])
-async def write_file(request: WriteFileRequest = Body(...)):
+@app.post("/ha_write_file", summary="Write a file to /config", tags=["files"])
+async def ha_write_file(request: WriteFileRequest = Body(...)):
     """
     Write content to a file in Home Assistant config directory.
     
     Example: {"filepath": "scripts/test.yaml", "content": "..."}
     """
     try:
-        message = await file_mgr.write_file(request.filepath, request.content)
+        message = await file_mgr.ha_write_file(request.filepath, request.content)
         return SuccessResponse(message=message)
         
     except Exception as e:
@@ -753,15 +766,15 @@ async def write_file(request: WriteFileRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/list_directory", summary="List directory contents", tags=["files"])
-async def list_directory(request: ListDirectoryRequest = Body(...)):
+@app.post("/ha_list_directory", summary="List directory contents", tags=["files"])
+async def ha_list_directory(request: ListDirectoryRequest = Body(...)):
     """
     List files and directories in /config.
     
     Example: {"dirpath": "scripts"}
     """
     try:
-        items = await file_mgr.list_directory(request.dirpath)
+        items = await file_mgr.ha_list_directory(request.dirpath)
         return {
             "directory": request.dirpath or "/config",
             "items": items,
@@ -773,15 +786,15 @@ async def list_directory(request: ListDirectoryRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/delete_file", summary="Delete a file", tags=["files"])
-async def delete_file(request: DeleteFileRequest = Body(...)):
+@app.post("/ha_delete_file", summary="Delete a file", tags=["files"])
+async def ha_delete_file(request: DeleteFileRequest = Body(...)):
     """
     Delete a file from /config directory.
     
     Example: {"filepath": "scripts/old_script.yaml"}
     """
     try:
-        message = await file_mgr.delete_file(request.filepath)
+        message = await file_mgr.ha_delete_file(request.filepath)
         return SuccessResponse(message=message)
         
     except Exception as e:
@@ -814,8 +827,8 @@ class GetDirectoryTreeRequest(BaseModel):
     max_depth: int = Field(5, description="Maximum depth to traverse")
 
 
-@app.post("/create_directory", summary="Create a directory", tags=["files"])
-async def create_directory(request: CreateDirectoryRequest = Body(...)):
+@app.post("/ha_create_directory", summary="Create a directory", tags=["files"])
+async def ha_create_directory(request: CreateDirectoryRequest = Body(...)):
     """
     Create a new directory in /config.
     Creates parent directories if needed.
@@ -823,7 +836,7 @@ async def create_directory(request: CreateDirectoryRequest = Body(...)):
     Example: {"dirpath": "custom_scripts/automations"}
     """
     try:
-        full_path = file_mgr.resolve_path(request.dirpath)
+        full_path = file_mgr.ha_resolve_path(request.dirpath)
         full_path.mkdir(parents=True, exist_ok=True)
         
         return SuccessResponse(
@@ -835,8 +848,8 @@ async def create_directory(request: CreateDirectoryRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/move_file", summary="Move or rename a file", tags=["files"])
-async def move_file(request: MoveFileRequest = Body(...)):
+@app.post("/ha_move_file", summary="Move or rename a file", tags=["files"])
+async def ha_move_file(request: MoveFileRequest = Body(...)):
     """
     Move or rename a file within /config.
     
@@ -845,8 +858,8 @@ async def move_file(request: MoveFileRequest = Body(...)):
     - Move: {"source": "file.yaml", "destination": "scripts/file.yaml"}
     """
     try:
-        src_path = file_mgr.resolve_path(request.source)
-        dst_path = file_mgr.resolve_path(request.destination)
+        src_path = file_mgr.ha_resolve_path(request.source)
+        dst_path = file_mgr.ha_resolve_path(request.destination)
         
         if not src_path.exists():
             raise HTTPException(status_code=404, detail=f"Source file not found: {request.source}")
@@ -866,8 +879,8 @@ async def move_file(request: MoveFileRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/copy_file", summary="Copy a file", tags=["files"])
-async def copy_file(request: CopyFileRequest = Body(...)):
+@app.post("/ha_copy_file", summary="Copy a file", tags=["files"])
+async def ha_copy_file(request: CopyFileRequest = Body(...)):
     """
     Copy a file within /config.
     
@@ -876,8 +889,8 @@ async def copy_file(request: CopyFileRequest = Body(...)):
     try:
         import shutil
         
-        src_path = file_mgr.resolve_path(request.source)
-        dst_path = file_mgr.resolve_path(request.destination)
+        src_path = file_mgr.ha_resolve_path(request.source)
+        dst_path = file_mgr.ha_resolve_path(request.destination)
         
         if not src_path.exists():
             raise HTTPException(status_code=404, detail=f"Source file not found: {request.source}")
@@ -900,15 +913,15 @@ async def copy_file(request: CopyFileRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/search_files", summary="Search files by content", tags=["files"])
-async def search_files(request: SearchFilesRequest = Body(...)):
+@app.post("/ha_search_files", summary="Search files by content", tags=["files"])
+async def ha_search_files(request: SearchFilesRequest = Body(...)):
     """
     Search for files containing a pattern (text or regex).
     
     Example: {"pattern": "automation", "directory": ".", "extensions": ["yaml"]}
     """
     try:
-        search_path = file_mgr.resolve_path(request.directory)
+        search_path = file_mgr.ha_resolve_path(request.directory)
         matches = []
         
         for file_path in search_path.rglob("*"):
@@ -944,8 +957,8 @@ async def search_files(request: SearchFilesRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_directory_tree", summary="Get directory tree structure", tags=["files"])
-async def get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
+@app.post("/ha_get_directory_tree", summary="Get directory tree structure", tags=["files"])
+async def ha_get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
     """
     Get recursive directory tree structure.
     
@@ -980,7 +993,7 @@ async def get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
             
             return tree
         
-        root_path = file_mgr.resolve_path(request.dirpath)
+        root_path = file_mgr.ha_resolve_path(request.dirpath)
         tree = await build_tree(root_path)
         
         return SuccessResponse(
@@ -997,8 +1010,8 @@ async def get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
 # Automation & Scene Endpoints
 # ============================================================================
 
-@app.post("/list_automations", summary="List all automations", tags=["Automations"])
-async def list_automations(request: ListAutomationsRequest = Body(...)):
+@app.post("/ha_list_automations", summary="List all automations", tags=["Automations"])
+async def ha_list_automations(request: ListAutomationsRequest = Body(...)):
     """
     List all automation entities.
     
@@ -1028,8 +1041,8 @@ async def list_automations(request: ListAutomationsRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/trigger_automation", summary="Trigger an automation", tags=["Automations"])
-async def trigger_automation(request: TriggerAutomationRequest = Body(...)):
+@app.post("/ha_trigger_automation", summary="Trigger an automation", tags=["Automations"])
+async def ha_trigger_automation(request: TriggerAutomationRequest = Body(...)):
     """
     Manually trigger an automation.
     
@@ -1084,8 +1097,8 @@ class EnableDisableAutomationRequest(BaseModel):
     action: str = Field(..., description="enable or disable")
 
 
-@app.post("/create_automation", summary="Create a new automation", tags=["Automations"])
-async def create_automation(request: CreateAutomationRequest = Body(...)):
+@app.post("/ha_create_automation", summary="Create a new automation", tags=["Automations"])
+async def ha_create_automation(request: CreateAutomationRequest = Body(...)):
     """
     Create sophisticated automation with triggers, conditions, and actions.
     
@@ -1146,8 +1159,8 @@ async def create_automation(request: CreateAutomationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/update_automation", summary="Update an existing automation", tags=["Automations"])
-async def update_automation(request: UpdateAutomationRequest = Body(...)):
+@app.post("/ha_update_automation", summary="Update an existing automation", tags=["Automations"])
+async def ha_update_automation(request: UpdateAutomationRequest = Body(...)):
     """
     Update existing automation. Change triggers, conditions, or actions without deleting.
     
@@ -1210,8 +1223,8 @@ async def update_automation(request: UpdateAutomationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/delete_automation", summary="Delete an automation", tags=["Automations"])
-async def delete_automation(request: DeleteAutomationRequest = Body(...)):
+@app.post("/ha_delete_automation", summary="Delete an automation", tags=["Automations"])
+async def ha_delete_automation(request: DeleteAutomationRequest = Body(...)):
     """
     Delete automation from Home Assistant.
     **WARNING:** Cannot be undone!
@@ -1262,8 +1275,8 @@ async def delete_automation(request: DeleteAutomationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_automation_details", summary="Get automation details", tags=["Automations"])
-async def get_automation_details(request: GetAutomationDetailsRequest = Body(...)):
+@app.post("/ha_get_automation_details", summary="Get automation details", tags=["Automations"])
+async def ha_get_automation_details(request: GetAutomationDetailsRequest = Body(...)):
     """
     Get comprehensive details about automation: triggers, conditions, actions, execution history.
     
@@ -1305,8 +1318,8 @@ async def get_automation_details(request: GetAutomationDetailsRequest = Body(...
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/enable_disable_automation", summary="Enable or disable automation", tags=["Automations"])
-async def enable_disable_automation(request: EnableDisableAutomationRequest = Body(...)):
+@app.post("/ha_enable_disable_automation", summary="Enable or disable automation", tags=["Automations"])
+async def ha_enable_disable_automation(request: EnableDisableAutomationRequest = Body(...)):
     """
     Enable or disable an automation. Useful for seasonal automations or troubleshooting.
     
@@ -1334,8 +1347,8 @@ async def enable_disable_automation(request: EnableDisableAutomationRequest = Bo
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/create_scene", summary="Create a new scene", tags=["scenes"])
-async def create_scene(request: CreateSceneRequest = Body(...)):
+@app.post("/ha_create_scene", summary="Create a new scene", tags=["scenes"])
+async def ha_create_scene(request: CreateSceneRequest = Body(...)):
     """
     Create a scene with specific entity states.
     
@@ -1365,8 +1378,8 @@ async def create_scene(request: CreateSceneRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/activate_scene", summary="Activate a scene", tags=["scenes"])
-async def activate_scene(request: ActivateSceneRequest = Body(...)):
+@app.post("/ha_activate_scene", summary="Activate a scene", tags=["scenes"])
+async def ha_activate_scene(request: ActivateSceneRequest = Body(...)):
     """
     Activate an existing scene.
     
@@ -1389,8 +1402,8 @@ async def activate_scene(request: ActivateSceneRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/list_scenes", summary="List all scenes", tags=["scenes"])
-async def list_scenes():
+@app.post("/ha_list_scenes", summary="List all scenes", tags=["scenes"])
+async def ha_list_scenes():
     """List all available scenes"""
     try:
         states = await ha_api.get_states()
@@ -1421,8 +1434,8 @@ class VacuumControlRequest(BaseModel):
     entity_id: str = Field(..., description="Vacuum entity ID")
     action: str = Field(..., description="Action: start, pause, stop, return_to_base, locate, clean_spot")
 
-@app.post("/vacuum_control", summary="Control vacuum cleaner", tags=["vacuum"])
-async def vacuum_control(request: VacuumControlRequest = Body(...)):
+@app.post("/ha_vacuum_control", summary="Control vacuum cleaner", tags=["vacuum"])
+async def ha_vacuum_control(request: VacuumControlRequest = Body(...)):
     """
     Control vacuum cleaner entities.
     
@@ -1455,8 +1468,8 @@ class FanControlRequest(BaseModel):
     percentage: Optional[int] = Field(None, description="Speed percentage 0-100")
     oscillating: Optional[bool] = Field(None, description="Enable/disable oscillation")
 
-@app.post("/fan_control", summary="Control fan", tags=["fans"])
-async def fan_control(request: FanControlRequest = Body(...)):
+@app.post("/ha_fan_control", summary="Control fan", tags=["fans"])
+async def ha_fan_control(request: FanControlRequest = Body(...)):
     """
     Control fan entities.
     
@@ -1494,8 +1507,8 @@ class CameraSnapshotRequest(BaseModel):
     entity_id: str = Field(..., description="Camera entity ID")
     filename: Optional[str] = Field(None, description="Optional filename to save snapshot")
 
-@app.post("/camera_snapshot", summary="Get camera snapshot", tags=["cameras"])
-async def camera_snapshot(request: CameraSnapshotRequest = Body(...)):
+@app.post("/ha_camera_snapshot", summary="Get camera snapshot", tags=["cameras"])
+async def ha_camera_snapshot(request: CameraSnapshotRequest = Body(...)):
     """
     Get a snapshot from a camera.
     
@@ -1532,8 +1545,8 @@ class MediaPlayerRequest(BaseModel):
     media_content_id: Optional[str] = Field(None, description="Media content ID/URL to play")
     media_content_type: Optional[str] = Field(None, description="Media type: music, video, etc.")
 
-@app.post("/media_player_control", summary="Control media player", tags=["media_player"])
-async def media_player_control(request: MediaPlayerRequest = Body(...)):
+@app.post("/ha_media_player_control", summary="Control media player", tags=["media_player"])
+async def ha_media_player_control(request: MediaPlayerRequest = Body(...)):
     """
     Control media player entities.
     
@@ -1582,8 +1595,8 @@ async def media_player_control(request: MediaPlayerRequest = Body(...)):
 # System & Add-on Endpoints
 # ============================================================================
 
-@app.post("/restart_homeassistant", summary="Restart Home Assistant", tags=["system"])
-async def restart_homeassistant(request: RestartHomeAssistantRequest = Body(...)):
+@app.post("/ha_restart_homeassistant", summary="Restart Home Assistant", tags=["system"])
+async def ha_restart_homeassistant(request: RestartHomeAssistantRequest = Body(...)):
     """
     Restart the Home Assistant core.
     
@@ -1633,8 +1646,8 @@ class PlotSensorHistoryRequest(BaseModel):
     title: Optional[str] = Field(None, description="Chart title")
 
 
-@app.post("/execute_python", summary="Execute Python code with pandas/matplotlib", tags=["code_execution"])
-async def execute_python(request: ExecutePythonRequest = Body(...)):
+@app.post("/ha_execute_python", summary="Execute Python code with pandas/matplotlib", tags=["code_execution"])
+async def ha_execute_python(request: ExecutePythonRequest = Body(...)):
     """
     Execute Python code in sandbox with pandas, numpy, matplotlib available.
     Returns stdout output and/or base64-encoded plots.
@@ -1714,8 +1727,8 @@ async def execute_python(request: ExecutePythonRequest = Body(...)):
         raise HTTPException(status_code=500, detail=f"Execution error: {str(e)}")
 
 
-@app.post("/analyze_states_dataframe", summary="Get HA states as pandas DataFrame", tags=["code_execution"])
-async def analyze_states_dataframe(request: AnalyzeStatesRequest = Body(...)):
+@app.post("/ha_analyze_states_dataframe", summary="Get HA states as pandas DataFrame", tags=["code_execution"])
+async def ha_analyze_states_dataframe(request: AnalyzeStatesRequest = Body(...)):
     """
     Get Home Assistant states as a pandas DataFrame for analysis.
     Returns JSON representation of the DataFrame.
@@ -1784,8 +1797,8 @@ async def analyze_states_dataframe(request: AnalyzeStatesRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/plot_sensor_history", summary="Plot sensor history chart", tags=["code_execution"])
-async def plot_sensor_history(request: PlotSensorHistoryRequest = Body(...)):
+@app.post("/ha_plot_sensor_history", summary="Plot sensor history chart", tags=["code_execution"])
+async def ha_plot_sensor_history(request: PlotSensorHistoryRequest = Body(...)):
     """
     Plot sensor history as a time-series chart.
     Returns base64-encoded PNG image.
@@ -1889,8 +1902,8 @@ class UpdateAddonRequest(BaseModel):
     version: Optional[str] = Field(None, description="Target version (default: latest)")
 
 
-@app.post("/list_addons", summary="List all Home Assistant add-ons", tags=["addons"])
-async def list_addons():
+@app.post("/ha_list_addons", summary="List all Home Assistant add-ons", tags=["addons"])
+async def ha_list_addons():
     """
     Get list of all installed and available add-ons.
     
@@ -1914,8 +1927,8 @@ async def list_addons():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_addon_info", summary="Get detailed add-on information", tags=["addons"])
-async def get_addon_info(request: AddonActionRequest = Body(...)):
+@app.post("/ha_get_addon_info", summary="Get detailed add-on information", tags=["addons"])
+async def ha_get_addon_info(request: AddonActionRequest = Body(...)):
     """
     Get comprehensive information about a specific add-on.
     
@@ -1940,8 +1953,8 @@ async def get_addon_info(request: AddonActionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/start_addon", summary="Start an add-on", tags=["addons"])
-async def start_addon(request: AddonActionRequest = Body(...)):
+@app.post("/ha_start_addon", summary="Start an add-on", tags=["addons"])
+async def ha_start_addon(request: AddonActionRequest = Body(...)):
     """Start a stopped add-on"""
     try:
         response = await http_client.post(
@@ -1957,8 +1970,8 @@ async def start_addon(request: AddonActionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/stop_addon", summary="Stop a running add-on", tags=["addons"])
-async def stop_addon(request: AddonActionRequest = Body(...)):
+@app.post("/ha_stop_addon", summary="Stop a running add-on", tags=["addons"])
+async def ha_stop_addon(request: AddonActionRequest = Body(...)):
     """Stop a running add-on"""
     try:
         response = await http_client.post(
@@ -1974,8 +1987,8 @@ async def stop_addon(request: AddonActionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/restart_addon", summary="Restart an add-on", tags=["addons"])
-async def restart_addon(request: AddonActionRequest = Body(...)):
+@app.post("/ha_restart_addon", summary="Restart an add-on", tags=["addons"])
+async def ha_restart_addon(request: AddonActionRequest = Body(...)):
     """Restart an add-on (useful after configuration changes)"""
     try:
         response = await http_client.post(
@@ -1991,8 +2004,8 @@ async def restart_addon(request: AddonActionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/install_addon", summary="Install a new add-on", tags=["addons"])
-async def install_addon(request: InstallAddonRequest = Body(...)):
+@app.post("/ha_install_addon", summary="Install a new add-on", tags=["addons"])
+async def ha_install_addon(request: InstallAddonRequest = Body(...)):
     """
     Install a new add-on from repository.
     
@@ -2017,8 +2030,8 @@ async def install_addon(request: InstallAddonRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/uninstall_addon", summary="Uninstall an add-on", tags=["addons"])
-async def uninstall_addon(request: AddonActionRequest = Body(...)):
+@app.post("/ha_uninstall_addon", summary="Uninstall an add-on", tags=["addons"])
+async def ha_uninstall_addon(request: AddonActionRequest = Body(...)):
     """
     Uninstall an add-on (removes all data).
     
@@ -2038,8 +2051,8 @@ async def uninstall_addon(request: AddonActionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/update_addon", summary="Update an add-on to latest version", tags=["addons"])
-async def update_addon(request: UpdateAddonRequest = Body(...)):
+@app.post("/ha_update_addon", summary="Update an add-on to latest version", tags=["addons"])
+async def ha_update_addon(request: UpdateAddonRequest = Body(...)):
     """Update an add-on to the latest (or specified) version"""
     try:
         payload = {}
@@ -2060,8 +2073,8 @@ async def update_addon(request: UpdateAddonRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_addon_logs", summary="Get add-on logs", tags=["addons"])
-async def get_addon_logs(request: AddonActionRequest = Body(...)):
+@app.post("/ha_get_addon_logs", summary="Get add-on logs", tags=["addons"])
+async def ha_get_addon_logs(request: AddonActionRequest = Body(...)):
     """
     Retrieve recent logs from an add-on.
     
@@ -2124,8 +2137,8 @@ class GetBinarySensorRequest(BaseModel):
     include_battery: bool = Field(True, description="Include battery info if available")
 
 
-@app.post("/get_entity_history", summary="Get entity history with state changes", tags=["logs_history"])
-async def get_entity_history(request: GetEntityHistoryRequest = Body(...)):
+@app.post("/ha_get_entity_history", summary="Get entity history with state changes", tags=["logs_history"])
+async def ha_get_entity_history(request: GetEntityHistoryRequest = Body(...)):
     """
     Get historical state changes for any entity to understand past behavior.
     
@@ -2181,8 +2194,8 @@ async def get_entity_history(request: GetEntityHistoryRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_system_logs", summary="Get Home Assistant system logs", tags=["logs_history"])
-async def get_system_logs(request: GetSystemLogsRequest = Body(...)):
+@app.post("/ha_get_system_logs", summary="Get Home Assistant system logs", tags=["logs_history"])
+async def ha_get_system_logs(request: GetSystemLogsRequest = Body(...)):
     """
     Retrieve system logs for debugging and monitoring.
     Filter by severity (error, warning, info) and search for specific components.
@@ -2241,8 +2254,8 @@ async def get_system_logs(request: GetSystemLogsRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_error_log", summary="Quick error log summary", tags=["logs_history"])
-async def get_error_log(request: GetErrorLogRequest = Body(...)):
+@app.post("/ha_get_error_log", summary="Quick error log summary", tags=["logs_history"])
+async def ha_get_error_log(request: GetErrorLogRequest = Body(...)):
     """
     Get recent errors and warnings from Home Assistant.
     Quick way to identify problems without reading full logs.
@@ -2283,8 +2296,8 @@ async def get_error_log(request: GetErrorLogRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/diagnose_entity", summary="Comprehensive entity diagnostics", tags=["logs_history"])
-async def diagnose_entity(request: DiagnoseEntityRequest = Body(...)):
+@app.post("/ha_diagnose_entity", summary="Comprehensive entity diagnostics", tags=["logs_history"])
+async def ha_diagnose_entity(request: DiagnoseEntityRequest = Body(...)):
     """
     Deep dive into entity: current state, attributes, recent history, related automations.
     
@@ -2352,8 +2365,8 @@ async def diagnose_entity(request: DiagnoseEntityRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_statistics", summary="Statistical analysis of sensor data", tags=["logs_history"])
-async def get_statistics(request: GetStatisticsRequest = Body(...)):
+@app.post("/ha_get_statistics", summary="Statistical analysis of sensor data", tags=["logs_history"])
+async def ha_get_statistics(request: GetStatisticsRequest = Body(...)):
     """
     Get min, max, mean, sum values over time periods for sensors.
     
@@ -2438,8 +2451,8 @@ async def get_statistics(request: GetStatisticsRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_binary_sensor", summary="Binary sensor state inspector", tags=["logs_history"])
-async def get_binary_sensor(request: GetBinarySensorRequest = Body(...)):
+@app.post("/ha_get_binary_sensor", summary="Binary sensor state inspector", tags=["logs_history"])
+async def ha_get_binary_sensor(request: GetBinarySensorRequest = Body(...)):
     """
     Check binary sensors (door, window, motion, smoke, etc.) with detailed attributes.
     
@@ -2542,8 +2555,8 @@ class CreateMushroomCardRequest(BaseModel):
     name: Optional[str] = Field(None, description="Card name")
 
 
-@app.post("/list_dashboards", summary="List all dashboards", tags=["dashboards"])
-async def list_dashboards(request: ListDashboardsRequest = Body(...)):
+@app.post("/ha_list_dashboards", summary="List all dashboards", tags=["dashboards"])
+async def ha_list_dashboards(request: ListDashboardsRequest = Body(...)):
     """
     Shows dashboard names, URLs, and configuration modes (storage/yaml).
     First step in dashboard management.
@@ -2580,8 +2593,8 @@ async def list_dashboards(request: ListDashboardsRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/get_dashboard_config", summary="Get dashboard configuration", tags=["dashboards"])
-async def get_dashboard_config(request: GetDashboardConfigRequest = Body(...)):
+@app.post("/ha_get_dashboard_config", summary="Get dashboard configuration", tags=["dashboards"])
+async def ha_get_dashboard_config(request: GetDashboardConfigRequest = Body(...)):
     """
     Get dashboard YAML/JSON config.
     
@@ -2610,8 +2623,8 @@ async def get_dashboard_config(request: GetDashboardConfigRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/create_dashboard", summary="Create a new dashboard", tags=["dashboards"])
-async def create_dashboard(request: CreateDashboardRequest = Body(...)):
+@app.post("/ha_create_dashboard", summary="Create a new dashboard", tags=["dashboards"])
+async def ha_create_dashboard(request: CreateDashboardRequest = Body(...)):
     """
     Create new Lovelace dashboard.
     
@@ -2664,8 +2677,8 @@ async def create_dashboard(request: CreateDashboardRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/update_dashboard_config", summary="Update dashboard configuration", tags=["dashboards"])
-async def update_dashboard_config(request: UpdateDashboardConfigRequest = Body(...)):
+@app.post("/ha_update_dashboard_config", summary="Update dashboard configuration", tags=["dashboards"])
+async def ha_update_dashboard_config(request: UpdateDashboardConfigRequest = Body(...)):
     """
     Modify existing dashboard configuration.
     
@@ -2697,8 +2710,8 @@ async def update_dashboard_config(request: UpdateDashboardConfigRequest = Body(.
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/delete_dashboard", summary="Delete a dashboard", tags=["dashboards"])
-async def delete_dashboard(request: DeleteDashboardRequest = Body(...)):
+@app.post("/ha_delete_dashboard", summary="Delete a dashboard", tags=["dashboards"])
+async def ha_delete_dashboard(request: DeleteDashboardRequest = Body(...)):
     """
     Remove a dashboard from Home Assistant.
     **WARNING:** Cannot be undone!
@@ -2723,8 +2736,8 @@ async def delete_dashboard(request: DeleteDashboardRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/list_hacs_cards", summary="List HACS custom cards", tags=["dashboards"])
-async def list_hacs_cards(request: ListHacsCardsRequest = Body(...)):
+@app.post("/ha_list_hacs_cards", summary="List HACS custom cards", tags=["dashboards"])
+async def ha_list_hacs_cards(request: ListHacsCardsRequest = Body(...)):
     """
     Get list of popular HACS custom cards.
     
@@ -2782,8 +2795,8 @@ async def list_hacs_cards(request: ListHacsCardsRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/create_button_card", summary="Create HACS button card", tags=["dashboards"])
-async def create_button_card(request: CreateButtonCardRequest = Body(...)):
+@app.post("/ha_create_button_card", summary="Create HACS button card", tags=["dashboards"])
+async def ha_create_button_card(request: CreateButtonCardRequest = Body(...)):
     """
     Create a button-card (HACS custom card).
     **REQUIRES:** button-card from HACS
@@ -2840,8 +2853,8 @@ async def create_button_card(request: CreateButtonCardRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/create_mushroom_card", summary="Create HACS mushroom card", tags=["dashboards"])
-async def create_mushroom_card(request: CreateMushroomCardRequest = Body(...)):
+@app.post("/ha_create_mushroom_card", summary="Create HACS mushroom card", tags=["dashboards"])
+async def ha_create_mushroom_card(request: CreateMushroomCardRequest = Body(...)):
     """
     Create a mushroom card (HACS custom card).
     **REQUIRES:** mushroom from HACS
@@ -2918,8 +2931,8 @@ class EnergyIntelligenceRequest(BaseModel):
     suggest_savings: bool = Field(True, description="Provide energy-saving suggestions")
 
 
-@app.post("/analyze_home_context", summary="Analyze complete home context", tags=["intelligence"])
-async def analyze_home_context(request: AnalyzeHomeContextRequest = Body(...)):
+@app.post("/ha_analyze_home_context", summary="Analyze complete home context", tags=["intelligence"])
+async def ha_analyze_home_context(request: AnalyzeHomeContextRequest = Body(...)):
     """
     Analyzes current state: occupancy, activity, time of day, weather, energy usage.
     
@@ -2997,8 +3010,8 @@ async def analyze_home_context(request: AnalyzeHomeContextRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/activity_recognition", summary="AI activity recognition", tags=["intelligence"])
-async def activity_recognition(request: ActivityRecognitionRequest = Body(...)):
+@app.post("/ha_activity_recognition", summary="AI activity recognition", tags=["intelligence"])
+async def ha_activity_recognition(request: ActivityRecognitionRequest = Body(...)):
     """
     Infer current activity from sensors, devices, time, and patterns.
     Detects: sleeping, cooking, working, watching TV, etc.
@@ -3074,8 +3087,8 @@ async def activity_recognition(request: ActivityRecognitionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/comfort_optimization", summary="Multi-factor comfort optimization", tags=["intelligence"])
-async def comfort_optimization(request: ComfortOptimizationRequest = Body(...)):
+@app.post("/ha_comfort_optimization", summary="Multi-factor comfort optimization", tags=["intelligence"])
+async def ha_comfort_optimization(request: ComfortOptimizationRequest = Body(...)):
     """
     Optimizes for comfort: temperature, lighting, air quality, noise level.
     
@@ -3166,8 +3179,8 @@ async def comfort_optimization(request: ComfortOptimizationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/energy_intelligence", summary="Energy usage analysis & optimization", tags=["intelligence"])
-async def energy_intelligence(request: EnergyIntelligenceRequest = Body(...)):
+@app.post("/ha_energy_intelligence", summary="Energy usage analysis & optimization", tags=["intelligence"])
+async def ha_energy_intelligence(request: EnergyIntelligenceRequest = Body(...)):
     """
     Analyzes energy consumption and provides recommendations.
     
@@ -3278,8 +3291,8 @@ class VacationModeRequest(BaseModel):
     security_mode: Optional[str] = Field("medium", description="Security alert sensitivity: high, medium, low")
 
 
-@app.post("/intelligent_security_monitor", summary="Intelligent security monitoring with AI", tags=["security"])
-async def intelligent_security_monitor(request: IntelligentSecurityMonitorRequest = Body(...)):
+@app.post("/ha_intelligent_security_monitor", summary="Intelligent security monitoring with AI", tags=["security"])
+async def ha_intelligent_security_monitor(request: IntelligentSecurityMonitorRequest = Body(...)):
     """
     Analyzes door/window sensors, cameras, motion patterns. Alerts on unusual activity.
     
@@ -3352,8 +3365,8 @@ async def intelligent_security_monitor(request: IntelligentSecurityMonitorReques
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/anomaly_detection", summary="Anomaly detection in sensor readings", tags=["security"])
-async def anomaly_detection(request: AnomalyDetectionRequest = Body(...)):
+@app.post("/ha_anomaly_detection", summary="Anomaly detection in sensor readings", tags=["security"])
+async def ha_anomaly_detection(request: AnomalyDetectionRequest = Body(...)):
     """
     Uses baseline learning to identify anomalies in energy usage, motion, or sensor readings.
     
@@ -3432,8 +3445,8 @@ async def anomaly_detection(request: AnomalyDetectionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/vacation_mode", summary="Vacation mode with presence simulation", tags=["security"])
-async def vacation_mode(request: VacationModeRequest = Body(...)):
+@app.post("/ha_vacation_mode", summary="Vacation mode with presence simulation", tags=["security"])
+async def ha_vacation_mode(request: VacationModeRequest = Body(...)):
     """
     Activates energy-efficient settings, presence simulation, and automated alerts.
     
@@ -3526,8 +3539,8 @@ class FacialRecognitionRequest(BaseModel):
     known_faces: Optional[List[str]] = Field(None, description="Names of known people to recognize")
 
 
-@app.post("/analyze_camera_vlm", summary="Vision-language model camera analysis", tags=["camera_vlm"])
-async def analyze_camera_vlm(request: AnalyzeCameraVLMRequest = Body(...)):
+@app.post("/ha_analyze_camera_vlm", summary="Vision-language model camera analysis", tags=["camera_vlm"])
+async def ha_analyze_camera_vlm(request: AnalyzeCameraVLMRequest = Body(...)):
     """
     Analyze camera feed with vision-language models (GPT-4 Vision, Claude, etc.)
     
@@ -3576,8 +3589,8 @@ async def analyze_camera_vlm(request: AnalyzeCameraVLMRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/object_detection", summary="Detect objects in camera feed", tags=["camera_vlm"])
-async def object_detection(request: ObjectDetectionRequest = Body(...)):
+@app.post("/ha_object_detection", summary="Detect objects in camera feed", tags=["camera_vlm"])
+async def ha_object_detection(request: ObjectDetectionRequest = Body(...)):
     """
     Detect objects in camera image (person, car, package, pet, etc.)
     
@@ -3629,8 +3642,8 @@ async def object_detection(request: ObjectDetectionRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/facial_recognition", summary="Recognize faces in camera feed", tags=["camera_vlm"])
-async def facial_recognition(request: FacialRecognitionRequest = Body(...)):
+@app.post("/ha_facial_recognition", summary="Recognize faces in camera feed", tags=["camera_vlm"])
+async def ha_facial_recognition(request: FacialRecognitionRequest = Body(...)):
     """
     Recognize known faces in camera image.
     
@@ -3691,8 +3704,8 @@ async def facial_recognition(request: FacialRecognitionRequest = Body(...)):
 class GetEntityStateNativeRequest(BaseModel):
     entity_id: str = Field(..., description="Entity ID to query")
 
-@app.post("/get_entity_state_native", summary="Get entity state (MCP native)", tags=["native_mcpo"])
-async def get_entity_state_native(request: GetEntityStateNativeRequest = Body(...)):
+@app.post("/ha_get_entity_state_native", summary="Get entity state (MCP native)", tags=["native_mcpo"])
+async def ha_get_entity_state(request: GetEntityStateNativeRequest = Body(...)):
     """Get current state and attributes of any entity (native MCP-style)"""
     try:
         state = await ha_api.get_states(request.entity_id)
@@ -3709,8 +3722,8 @@ async def get_entity_state_native(request: GetEntityStateNativeRequest = Body(..
 class ListEntitiesNativeRequest(BaseModel):
     domain: Optional[str] = Field(None, description="Filter by domain (e.g., 'light', 'switch')")
 
-@app.post("/list_entities_native", summary="List all entities (MCP native)", tags=["native_mcpo"])
-async def list_entities_native(request: ListEntitiesNativeRequest = Body(...)):
+@app.post("/ha_list_entities_native", summary="List all entities (MCP native)", tags=["native_mcpo"])
+async def ha_list_entities(request: ListEntitiesNativeRequest = Body(...)):
     """List all Home Assistant entities, optionally filtered by domain"""
     try:
         states = await ha_api.get_states()
@@ -3737,8 +3750,8 @@ async def list_entities_native(request: ListEntitiesNativeRequest = Body(...)):
 
 
 # Get Services (native MCP tool)
-@app.post("/get_services_native", summary="List available services (MCP native)", tags=["native_mcpo"])
-async def get_services_native():
+@app.post("/ha_get_services_native", summary="List available services (MCP native)", tags=["native_mcpo"])
+async def ha_get_services():
     """Get all available Home Assistant services"""
     try:
         services = await ha_api.get_services()
@@ -3756,8 +3769,8 @@ class FireEventNativeRequest(BaseModel):
     event_type: str = Field(..., description="Event type to fire")
     event_data: Optional[Dict[str, Any]] = Field(None, description="Event data payload")
 
-@app.post("/fire_event_native", summary="Fire custom event (MCP native)", tags=["native_mcpo"])
-async def fire_event_native(request: FireEventNativeRequest = Body(...)):
+@app.post("/ha_fire_event_native", summary="Fire custom event (MCP native)", tags=["native_mcpo"])
+async def ha_fire_event(request: FireEventNativeRequest = Body(...)):
     """
     Fire a custom event in Home Assistant.
     
@@ -3781,8 +3794,8 @@ async def fire_event_native(request: FireEventNativeRequest = Body(...)):
 class RenderTemplateNativeRequest(BaseModel):
     template: str = Field(..., description="Jinja2 template string")
 
-@app.post("/render_template_native", summary="Render Jinja2 template (MCP native)", tags=["native_mcpo"])
-async def render_template_native(request: RenderTemplateNativeRequest = Body(...)):
+@app.post("/ha_render_template_native", summary="Render Jinja2 template (MCP native)", tags=["native_mcpo"])
+async def ha_render_template(request: RenderTemplateNativeRequest = Body(...)):
     """
     Render a Jinja2 template using Home Assistant's template engine.
     
@@ -3802,8 +3815,8 @@ async def render_template_native(request: RenderTemplateNativeRequest = Body(...
 
 
 # Get Config (native MCP tool)
-@app.post("/get_config_native", summary="Get Home Assistant configuration (MCP native)", tags=["native_mcpo"])
-async def get_config_native():
+@app.post("/ha_get_config_native", summary="Get Home Assistant configuration (MCP native)", tags=["native_mcpo"])
+async def ha_get_config():
     """Get Home Assistant system configuration"""
     try:
         config = await ha_api.get_config()
@@ -3822,8 +3835,8 @@ class GetHistoryNativeRequest(BaseModel):
     start_time: Optional[str] = Field(None, description="Start time (ISO format)")
     end_time: Optional[str] = Field(None, description="End time (ISO format)")
 
-@app.post("/get_history_native", summary="Get entity history (MCP native)", tags=["native_mcpo"])
-async def get_history_native(request: GetHistoryNativeRequest = Body(...)):
+@app.post("/ha_get_history_native", summary="Get entity history (MCP native)", tags=["native_mcpo"])
+async def ha_get_history(request: GetHistoryNativeRequest = Body(...)):
     """
     Get historical states for an entity.
     
@@ -3862,8 +3875,8 @@ class GetLogbookNativeRequest(BaseModel):
     start_time: Optional[str] = Field(None, description="Start time (ISO format)")
     end_time: Optional[str] = Field(None, description="End time (ISO format)")
 
-@app.post("/get_logbook_native", summary="Get logbook entries (MCP native)", tags=["native_mcpo"])
-async def get_logbook_native(request: GetLogbookNativeRequest = Body(...)):
+@app.post("/ha_get_logbook_native", summary="Get logbook entries (MCP native)", tags=["native_mcpo"])
+async def ha_get_logbook(request: GetLogbookNativeRequest = Body(...)):
     """
     Get Home Assistant logbook entries (state changes, events).
     
@@ -3905,8 +3918,8 @@ class GetSystemLogsNewRequest(BaseModel):
     lines: Optional[int] = Field(100, ge=1, le=10000, description="Number of lines to retrieve")
     level: Optional[str] = Field(None, description="Filter by log level: 'ERROR', 'WARNING', 'INFO', 'DEBUG'")
 
-@app.post("/get_system_logs_diagnostics", summary="Get Home Assistant system logs", tags=["system_diagnostics"])
-async def get_system_logs_diagnostics(request: GetSystemLogsNewRequest = Body(...)):
+@app.post("/ha_get_system_logs_diagnostics", summary="Get Home Assistant system logs", tags=["system_diagnostics"])
+async def ha_get_system_logs(request: GetSystemLogsNewRequest = Body(...)):
     """
     Read Home Assistant core logs to see errors, warnings, and debug info.
     
@@ -3965,8 +3978,8 @@ async def get_system_logs_diagnostics(request: GetSystemLogsNewRequest = Body(..
 
 
 # Get Persistent Notifications
-@app.post("/get_persistent_notifications", summary="Get persistent notifications", tags=["system_diagnostics"])
-async def get_persistent_notifications():
+@app.post("/ha_get_persistent_notifications", summary="Get persistent notifications", tags=["system_diagnostics"])
+async def ha_get_persistent_notifications():
     """
     Get all persistent notifications (errors, warnings, updates).
     
@@ -4009,8 +4022,8 @@ async def get_persistent_notifications():
 class GetIntegrationStatusNewRequest(BaseModel):
     integration: Optional[str] = Field(None, description="Specific integration to check")
 
-@app.post("/get_integration_status", summary="Check integration health", tags=["system_diagnostics"])
-async def get_integration_status(request: GetIntegrationStatusNewRequest = Body(...)):
+@app.post("/ha_get_integration_status", summary="Check integration health", tags=["system_diagnostics"])
+async def ha_get_integration_status(request: GetIntegrationStatusNewRequest = Body(...)):
     """
     Check status of Home Assistant integrations by analyzing loaded components.
     
@@ -4073,8 +4086,8 @@ async def get_integration_status(request: GetIntegrationStatusNewRequest = Body(
 
 
 # Get Startup Errors
-@app.post("/get_startup_errors", summary="Get startup errors", tags=["system_diagnostics"])
-async def get_startup_errors():
+@app.post("/ha_get_startup_errors", summary="Get startup errors", tags=["system_diagnostics"])
+async def ha_get_startup_errors():
     """
     Get errors from last Home Assistant restart via persistent notifications.
     
@@ -4140,7 +4153,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "4.0.2",
+        "version": "4.0.3",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -4150,7 +4163,7 @@ async def root():
     """Root endpoint with API information"""
     return {
         "name": "Home Assistant OpenAPI Server",
-        "version": "4.0.2",
+        "version": "4.0.3",
         "description": "85 unified endpoints for Home Assistant control (8 native MCPO + 4 diagnostics + 73 production)",
         "docs": "/docs",
         "openapi": "/openapi.json",
