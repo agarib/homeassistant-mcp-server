@@ -1,38 +1,65 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 3.0.0
-Date: October 31, 2025
+Version: 4.0.0
+Date: November 1, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
 Pure FastAPI/OpenAPI architecture for Open-WebUI integration.
-Production-ready with 77 fully tested endpoints.
+Unified server with 85 production-ready endpoints.
 
 🌟 ARCHITECTURE:
-✨ 77 Production-ready FastAPI POST endpoints
-✨ Pydantic request/response validation
-✨ Proper error handling with HTTPException
+📍 Deployment: Home Assistant Add-on (192.168.1.203:8001)
+📡 MCPO Integration: SSE transport at http://192.168.1.203:8001/messages
+✨ 85 Unified FastAPI endpoints (83 POST + 2 GET) with Pydantic validation
+✨ 8 Native MCPO tools (converted from MCP protocol)
+✨ 4 NEW System Diagnostics tools (logs, notifications, integration status)
+✨ 73 Existing production tools (device control, automations, files, etc.)
+✨ Consistent error handling with HTTPException
 ✨ Automatic OpenAPI 3.0.0 spec generation
 ✨ CORS enabled for web clients
 ✨ Optional admin token for add-on management
+✨ Direct /config access via HA add-on mount
 
-📦 TOOL CATEGORIES (77 tools):
-✅ Device Control (4 tools) - Lights, switches, climate, covers
-✅ File Operations (9 tools) - Full /config access
-✅ Automations (10 tools) - Create, update, trigger, manage
+📦 TOOL CATEGORIES (85 endpoints):
+✅ Native MCPO Tools (8 tools) - MCP-native HA control with Pydantic
+✅ System Diagnostics (4 tools) - Logs, notifications, integration health, startup errors
+✅ Automations (7 tools) - Create, update, trigger, manage, enable/disable
+✅ File Operations (9 tools) - Full /config access, search, tree, copy, move
+✅ Add-on Management (9 tools) - Install, start, stop, restart, logs
+✅ Dashboards (8 tools) - Lovelace management, HACS cards
+✅ Device Control (7 tools) - Lights, switches, climate, covers, vacuum, fan, media
+✅ Logs & History (6 tools) - Entity history, diagnostics, statistics, binary sensors
+✅ Discovery (4 tools) - States, areas, devices, entities
+✅ Intelligence (4 tools) - Context, activity, comfort, energy analysis
+✅ Code Execution (3 tools) - Python sandbox, pandas, matplotlib
 ✅ Scenes (3 tools) - Activate, create, list
-✅ Media & Devices (4 tools) - Vacuum, fan, camera, media
-✅ System (2 tools) - Restart, call service
-✅ Code Execution (3 tools) - Python sandbox, YAML, templates
-✅ Discovery (5 tools) - States, areas, devices, entities
-✅ Logs & History (6 tools) - Entity history, diagnostics, statistics
-✅ Dashboards (9 tools) - Lovelace management
-✅ Intelligence (4 tools) - Context, activity, comfort, energy
-✅ Security (3 tools) - Monitoring, anomaly detection, presence
+✅ Security (3 tools) - Monitoring, anomaly detection, vacation mode
 ✅ Camera VLM (3 tools) - Vision AI analysis
-✅ Add-on Management (9 tools) - Requires admin token
+✅ System (2 tools) - Restart HA, call service
+✅ Camera (1 tool) - Snapshot
+✅ Utility (2 tools) - Health check, API info
 
 CHANGELOG:
+v4.0.0 (2025-11-01):
+  - 🎯 MAJOR: Unified architecture with 85 total endpoints
+  - ✨ Added 8 native MCPO tools converted to FastAPI/Pydantic:
+    * get_entity_state_native, list_entities_native (discovery)
+    * get_services_native, fire_event_native (system utilities)
+    * render_template_native, get_config_native (configuration)
+    * get_history_native, get_logbook_native (history access)
+  - 🆕 Added 4 NEW System Diagnostics tools:
+    * get_system_logs_diagnostics - Read HA core logs with filtering
+    * get_persistent_notifications - See integration errors & notifications
+    * get_integration_status - Check integration health (LG ThinQ, etc.)
+    * get_startup_errors - Diagnose startup issues
+  - 🔧 Consolidated from separate MCP + OpenAPI servers to single unified server
+  - 📚 Complete Pydantic validation across all 85 tools
+  - 🚀 Simplified deployment (one server, one config)
+  - 📖 Comprehensive documentation (CONSOLIDATION_GUIDE.md, NEW_TOOLS_REFERENCE.md)
+  - 🎉 System visibility: AI can now see HA errors, notifications, and integration status
+  - 🔥 Added fire_event() and render_template() methods to HomeAssistantAPI class
+  
 v3.0.0 (2025-10-31):
   - Production release with 77 validated endpoints
   - Fixed add-on management via hassio API (requires admin token)
@@ -93,7 +120,7 @@ SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 HA_CONFIG_PATH = Path(os.getenv("HA_CONFIG_PATH", "/config"))
 PORT = int(os.getenv("PORT", "8001"))
 
-logger.info(f"🏠 Home Assistant OpenAPI Server v3.0.0")
+logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.0")
 logger.info(f"📁 Config Path: {HA_CONFIG_PATH}")
 logger.info(f"🌐 HA API URL: {HA_URL}")
 logger.info(f"🔌 Port: {PORT}")
@@ -102,8 +129,8 @@ logger.info(f"🔑 Supervisor Token: {'Present' if SUPERVISOR_TOKEN else 'Missin
 # Create FastAPI app
 app = FastAPI(
     title="Home Assistant OpenAPI Server",
-    version="3.0.0",
-    description="77 production-ready tools for comprehensive Home Assistant control via REST API. Pure OpenAPI architecture for Open-WebUI.",
+    version="4.0.0",
+    description="85 unified endpoints for comprehensive Home Assistant control via REST API. Pure OpenAPI architecture with Pydantic validation for Open-WebUI.",
     contact={
         "name": "agarib",
         "url": "https://github.com/agarib/homeassistant-mcp-server"
@@ -204,6 +231,24 @@ class HomeAssistantAPI:
     async def get_events(self) -> List[Dict]:
         """Get available event types"""
         return await self.call_api("GET", "/events")
+    
+    async def fire_event(self, event_type: str, event_data: Optional[Dict] = None) -> Dict:
+        """Fire a custom event"""
+        response = await http_client.post(
+            f"{self.base_url}/events/{event_type}",
+            json=event_data or {}
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    async def render_template(self, template: str) -> str:
+        """Render a Jinja2 template"""
+        response = await http_client.post(
+            f"{self.base_url}/template",
+            json={"template": template}
+        )
+        response.raise_for_status()
+        return response.text
 
 
 class FileManager:
@@ -3626,6 +3671,413 @@ async def facial_recognition(request: FacialRecognitionRequest = Body(...)):
 
 
 # ============================================================================
+# NATIVE MCPO TOOLS (Additional tools from native MCP server)
+# ============================================================================
+
+# Get Entity State (native MCP tool)
+class GetEntityStateNativeRequest(BaseModel):
+    entity_id: str = Field(..., description="Entity ID to query")
+
+@app.post("/get_entity_state_native", summary="Get entity state (MCP native)", tags=["native_mcpo"])
+async def get_entity_state_native(request: GetEntityStateNativeRequest = Body(...)):
+    """Get current state and attributes of any entity (native MCP-style)"""
+    try:
+        state = await ha_api.get_states(request.entity_id)
+        return SuccessResponse(
+            message=f"State for {request.entity_id}",
+            data=state
+        )
+    except Exception as e:
+        logger.error(f"Error getting entity state: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# List Entities (native MCP tool)
+class ListEntitiesNativeRequest(BaseModel):
+    domain: Optional[str] = Field(None, description="Filter by domain (e.g., 'light', 'switch')")
+
+@app.post("/list_entities_native", summary="List all entities (MCP native)", tags=["native_mcpo"])
+async def list_entities_native(request: ListEntitiesNativeRequest = Body(...)):
+    """List all Home Assistant entities, optionally filtered by domain"""
+    try:
+        states = await ha_api.get_states()
+        
+        if request.domain:
+            states = [s for s in states if s["entity_id"].startswith(f"{request.domain}.")]
+        
+        entity_list = [
+            {
+                "entity_id": s["entity_id"],
+                "state": s["state"],
+                "friendly_name": s.get("attributes", {}).get("friendly_name", s["entity_id"])
+            }
+            for s in states
+        ]
+        
+        return SuccessResponse(
+            message=f"Found {len(entity_list)} entities" + (f" in domain '{request.domain}'" if request.domain else ""),
+            data={"entities": entity_list, "count": len(entity_list)}
+        )
+    except Exception as e:
+        logger.error(f"Error listing entities: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Services (native MCP tool)
+@app.post("/get_services_native", summary="List available services (MCP native)", tags=["native_mcpo"])
+async def get_services_native():
+    """Get all available Home Assistant services"""
+    try:
+        services = await ha_api.get_services()
+        return SuccessResponse(
+            message="Available services retrieved",
+            data=services
+        )
+    except Exception as e:
+        logger.error(f"Error getting services: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Fire Event (native MCP tool)
+class FireEventNativeRequest(BaseModel):
+    event_type: str = Field(..., description="Event type to fire")
+    event_data: Optional[Dict[str, Any]] = Field(None, description="Event data payload")
+
+@app.post("/fire_event_native", summary="Fire custom event (MCP native)", tags=["native_mcpo"])
+async def fire_event_native(request: FireEventNativeRequest = Body(...)):
+    """
+    Fire a custom event in Home Assistant.
+    
+    Example: {
+        "event_type": "my_custom_event",
+        "event_data": {"message": "Hello from AI"}
+    }
+    """
+    try:
+        result = await ha_api.fire_event(request.event_type, request.event_data)
+        return SuccessResponse(
+            message=f"Event '{request.event_type}' fired",
+            data={"event_type": request.event_type, "event_data": request.event_data}
+        )
+    except Exception as e:
+        logger.error(f"Error firing event: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Render Template (native MCP tool)
+class RenderTemplateNativeRequest(BaseModel):
+    template: str = Field(..., description="Jinja2 template string")
+
+@app.post("/render_template_native", summary="Render Jinja2 template (MCP native)", tags=["native_mcpo"])
+async def render_template_native(request: RenderTemplateNativeRequest = Body(...)):
+    """
+    Render a Jinja2 template using Home Assistant's template engine.
+    
+    Example: {
+        "template": "{{ states('sensor.temperature') }} °C"
+    }
+    """
+    try:
+        result = await ha_api.render_template(request.template)
+        return SuccessResponse(
+            message="Template rendered",
+            data={"template": request.template, "result": result}
+        )
+    except Exception as e:
+        logger.error(f"Error rendering template: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Config (native MCP tool)
+@app.post("/get_config_native", summary="Get Home Assistant configuration (MCP native)", tags=["native_mcpo"])
+async def get_config_native():
+    """Get Home Assistant system configuration"""
+    try:
+        config = await ha_api.get_config()
+        return SuccessResponse(
+            message="Configuration retrieved",
+            data=config
+        )
+    except Exception as e:
+        logger.error(f"Error getting config: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get History (native MCP tool)
+class GetHistoryNativeRequest(BaseModel):
+    entity_id: str = Field(..., description="Entity ID")
+    start_time: Optional[str] = Field(None, description="Start time (ISO format)")
+    end_time: Optional[str] = Field(None, description="End time (ISO format)")
+
+@app.post("/get_history_native", summary="Get entity history (MCP native)", tags=["native_mcpo"])
+async def get_history_native(request: GetHistoryNativeRequest = Body(...)):
+    """
+    Get historical states for an entity.
+    
+    Example: {
+        "entity_id": "sensor.temperature",
+        "start_time": "2025-11-01T00:00:00",
+        "end_time": "2025-11-01T23:59:59"
+    }
+    """
+    try:
+        # Build history URL
+        url = f"{HA_URL}/api/history/period"
+        if request.start_time:
+            url += f"/{request.start_time}"
+        
+        params = {"filter_entity_id": request.entity_id}
+        if request.end_time:
+            params["end_time"] = request.end_time
+        
+        response = await http_client.get(url, params=params)
+        response.raise_for_status()
+        history = response.json()
+        
+        return SuccessResponse(
+            message=f"History for {request.entity_id}",
+            data={"entity_id": request.entity_id, "history": history}
+        )
+    except Exception as e:
+        logger.error(f"Error getting history: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Logbook (native MCP tool)
+class GetLogbookNativeRequest(BaseModel):
+    entity_id: Optional[str] = Field(None, description="Filter by entity ID")
+    start_time: Optional[str] = Field(None, description="Start time (ISO format)")
+    end_time: Optional[str] = Field(None, description="End time (ISO format)")
+
+@app.post("/get_logbook_native", summary="Get logbook entries (MCP native)", tags=["native_mcpo"])
+async def get_logbook_native(request: GetLogbookNativeRequest = Body(...)):
+    """
+    Get Home Assistant logbook entries (state changes, events).
+    
+    Example: {
+        "entity_id": "light.living_room",
+        "start_time": "2025-11-01T00:00:00"
+    }
+    """
+    try:
+        url = f"{HA_URL}/api/logbook"
+        if request.start_time:
+            url += f"/{request.start_time}"
+        
+        params = {}
+        if request.entity_id:
+            params["entity"] = request.entity_id
+        if request.end_time:
+            params["end_time"] = request.end_time
+        
+        response = await http_client.get(url, params=params)
+        response.raise_for_status()
+        logbook = response.json()
+        
+        return SuccessResponse(
+            message="Logbook entries retrieved",
+            data={"logbook": logbook, "count": len(logbook)}
+        )
+    except Exception as e:
+        logger.error(f"Error getting logbook: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# SYSTEM DIAGNOSTICS TOOLS (4 NEW tools)
+# ============================================================================
+
+# Get System Logs
+class GetSystemLogsNewRequest(BaseModel):
+    lines: Optional[int] = Field(100, ge=1, le=10000, description="Number of lines to retrieve")
+    level: Optional[str] = Field(None, description="Filter by log level: 'ERROR', 'WARNING', 'INFO', 'DEBUG'")
+
+@app.post("/get_system_logs_diagnostics", summary="Get Home Assistant system logs", tags=["system_diagnostics"])
+async def get_system_logs_diagnostics(request: GetSystemLogsNewRequest = Body(...)):
+    """
+    Read Home Assistant core logs to see errors, warnings, and debug info.
+    
+    **USE CASES:**
+    - Diagnose integration failures
+    - See startup errors
+    - Debug automation issues
+    - Monitor system health
+    
+    Example: {
+        "lines": 100,
+        "level": "ERROR"
+    }
+    """
+    try:
+        # Use Home Assistant error log API
+        url = f"{HA_URL}/api/error_log"
+        response = await http_client.get(url)
+        response.raise_for_status()
+        
+        full_log = response.text
+        log_lines = full_log.split('\n')
+        
+        # Filter by level if specified
+        if request.level:
+            log_lines = [line for line in log_lines if request.level.upper() in line.upper()]
+        
+        # Return last N lines
+        log_lines = log_lines[-request.lines:]
+        
+        return SuccessResponse(
+            message=f"Retrieved {len(log_lines)} log entries" + (f" (level: {request.level})" if request.level else ""),
+            data={
+                "log_lines": log_lines,
+                "count": len(log_lines),
+                "level_filter": request.level
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting system logs: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Persistent Notifications
+@app.post("/get_persistent_notifications", summary="Get persistent notifications", tags=["system_diagnostics"])
+async def get_persistent_notifications():
+    """
+    Get all persistent notifications (errors, warnings, updates).
+    
+    **SHOWS:**
+    - Integration errors (washing machine LG ThinQ errors!)
+    - Update notifications
+    - Configuration warnings
+    - System alerts
+    
+    **This is what Cloud AI was missing for diagnostics!**
+    """
+    try:
+        # Get all states and filter for persistent_notification domain
+        states = await ha_api.get_states()
+        notifications = [
+            {
+                "notification_id": s["entity_id"].replace("persistent_notification.", ""),
+                "title": s.get("attributes", {}).get("title", ""),
+                "message": s.get("attributes", {}).get("message", ""),
+                "created_at": s.get("last_changed"),
+                "status": s.get("attributes", {}).get("notification_id", "")
+            }
+            for s in states
+            if s["entity_id"].startswith("persistent_notification.")
+        ]
+        
+        return SuccessResponse(
+            message=f"Found {len(notifications)} persistent notifications",
+            data={
+                "notifications": notifications,
+                "count": len(notifications)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting notifications: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Integration Status
+class GetIntegrationStatusNewRequest(BaseModel):
+    integration: Optional[str] = Field(None, description="Specific integration to check")
+
+@app.post("/get_integration_status", summary="Check integration health", tags=["system_diagnostics"])
+async def get_integration_status(request: GetIntegrationStatusNewRequest = Body(...)):
+    """
+    Check status of Home Assistant integrations.
+    
+    **DETECTS:**
+    - Failed integrations
+    - Configuration errors
+    - API connection issues
+    - Update availability
+    
+    Example: {
+        "integration": "lg"
+    }
+    """
+    try:
+        # Get config entries (integrations)
+        url = f"{HA_URL}/api/config/config_entries/entry"
+        response = await http_client.get(url)
+        response.raise_for_status()
+        
+        entries = response.json()
+        
+        # Filter if specific integration requested
+        if request.integration:
+            entries = [e for e in entries if request.integration.lower() in e.get("domain", "").lower()]
+        
+        integration_status = [
+            {
+                "domain": entry.get("domain"),
+                "title": entry.get("title"),
+                "state": entry.get("state"),
+                "entry_id": entry.get("entry_id"),
+                "disabled_by": entry.get("disabled_by"),
+                "supports_options": entry.get("supports_options", False)
+            }
+            for entry in entries
+        ]
+        
+        return SuccessResponse(
+            message=f"Found {len(integration_status)} integrations",
+            data={
+                "integrations": integration_status,
+                "count": len(integration_status)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting integration status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get Startup Errors
+@app.post("/get_startup_errors", summary="Get startup errors", tags=["system_diagnostics"])
+async def get_startup_errors():
+    """
+    Get errors from last Home Assistant restart.
+    
+    **SHOWS:**
+    - Configuration errors
+    - Integration load failures
+    - Component initialization issues
+    - Platform setup errors
+    
+    **Perfect for debugging after HA restarts!**
+    """
+    try:
+        # Get error log and parse for startup errors
+        url = f"{HA_URL}/api/error_log"
+        response = await http_client.get(url)
+        response.raise_for_status()
+        
+        full_log = response.text
+        log_lines = full_log.split('\n')
+        
+        # Look for startup-related errors (last 500 lines typically cover startup)
+        startup_keywords = ['setup', 'init', 'load', 'start', 'bootstrap', 'ERROR', 'CRITICAL']
+        startup_errors = []
+        
+        for line in log_lines[-500:]:  # Check last 500 lines
+            if any(keyword in line.upper() for keyword in startup_keywords):
+                if 'ERROR' in line.upper() or 'CRITICAL' in line.upper():
+                    startup_errors.append(line)
+        
+        return SuccessResponse(
+            message=f"Found {len(startup_errors)} startup-related errors",
+            data={
+                "startup_errors": startup_errors[-100:],  # Last 100 errors
+                "count": len(startup_errors)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error getting startup errors: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
 # Health & Utility Endpoints
 # ============================================================================
 
@@ -3635,7 +4087,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "2.0.0",
+        "version": "4.0.0",
         "timestamp": datetime.utcnow().isoformat()
     }
 
@@ -3645,8 +4097,8 @@ async def root():
     """Root endpoint with API information"""
     return {
         "name": "Home Assistant OpenAPI Server",
-        "version": "2.0.0",
-        "description": "105 tools for Home Assistant control",
+        "version": "4.0.0",
+        "description": "85 unified endpoints for Home Assistant control (8 native MCPO + 4 diagnostics + 73 production)",
         "docs": "/docs",
         "openapi": "/openapi.json",
         "health": "/health"

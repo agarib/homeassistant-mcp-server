@@ -17,6 +17,7 @@ This method creates a local add-on that persists across restarts.
 #### Step 1: Copy Files to Home Assistant
 
 **Via SSH:**
+
 ```bash
 # Connect to Home Assistant
 ssh root@YOUR_HA_IP
@@ -29,12 +30,14 @@ mkdir -p /config/ha-openapi-server
 ```
 
 **Copy required files** to `/addons/local/ha-openapi-server/`:
+
 - `config.json`
 - `Dockerfile`
 - `run.sh`
 - `requirements.txt`
 
 **Copy server.py** to `/config/ha-openapi-server/`:
+
 - `server.py` (136 KB)
 
 #### Step 2: Set Permissions
@@ -57,6 +60,7 @@ chmod 644 /config/ha-openapi-server/server.py
 #### Step 4: Configure
 
 **Basic Configuration (68/77 tools):**
+
 ```json
 {
   "port": 8001,
@@ -65,6 +69,7 @@ chmod 644 /config/ha-openapi-server/server.py
 ```
 
 **Full Configuration (77/77 tools):**
+
 ```json
 {
   "port": 8001,
@@ -74,6 +79,7 @@ chmod 644 /config/ha-openapi-server/server.py
 ```
 
 To generate admin token:
+
 1. Profile → Security → Long-Lived Access Tokens
 2. Create Token → Name: "OpenAPI Server Admin"
 3. Copy token and paste into config
@@ -90,16 +96,19 @@ To generate admin token:
 #### Step 6: Verify Installation
 
 **Check logs:**
+
 - Go to **Log** tab
 - Look for: `🏠 Home Assistant OpenAPI Server v3.0.0`
 - Should see: `✅ Using admin token` (if configured) or `⚠️ Using SUPERVISOR_TOKEN`
 
 **Test endpoint:**
+
 ```bash
 curl http://YOUR_HA_IP:8001/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",
@@ -114,6 +123,7 @@ Expected response:
 If you have direct file access to `/addons/local/` directory:
 
 **Windows (via network share):**
+
 ```powershell
 # Map network drive to HA
 net use Z: \\YOUR_HA_IP\addons
@@ -126,6 +136,7 @@ Copy-Item "server.py" "\\YOUR_HA_IP\config\ha-openapi-server\"
 ```
 
 **Linux/Mac (via SCP):**
+
 ```bash
 # Copy addon structure
 scp -r config.json Dockerfile run.sh requirements.txt \
@@ -148,6 +159,7 @@ Default: `8001`
 ```
 
 **Notes:**
+
 - Must be between 1024-65535
 - Avoid ports used by other services
 - Update Open-WebUI URL if changed
@@ -163,6 +175,7 @@ Options: `debug`, `info`, `warning`, `error`, `critical`
 ```
 
 **Recommendations:**
+
 - Development: `debug`
 - Production: `info` or `warning`
 - Troubleshooting: `debug`
@@ -178,6 +191,7 @@ Optional long-lived access token for add-on management.
 ```
 
 **Required for:**
+
 - list_addons
 - get_addon_info
 - start/stop/restart_addon
@@ -185,6 +199,7 @@ Optional long-lived access token for add-on management.
 - get_addon_logs
 
 **Without admin token:**
+
 - 68/77 tools available
 - All core features work
 - Add-on management disabled
@@ -205,6 +220,7 @@ curl http://YOUR_HA_IP:8001/openapi.json | jq '.paths | length'
 ### Browse API Documentation
 
 Open in browser:
+
 - **Swagger UI:** `http://YOUR_HA_IP:8001/docs`
 - **ReDoc:** `http://YOUR_HA_IP:8001/redoc`
 
@@ -244,12 +260,14 @@ curl -X POST http://YOUR_HA_IP:8001/list_automations \
 ### Verify Tools Discovered
 
 Open-WebUI should discover:
+
 - **With admin token:** 77 tools
 - **Without admin token:** 68 tools
 
 ### Test Tool Execution
 
 In Open-WebUI chat:
+
 ```
 "Turn on the living room lights"
 "What's the temperature in the bedroom?"
@@ -262,16 +280,20 @@ In Open-WebUI chat:
 ### Add-on Won't Start
 
 **Check logs:**
+
 ```bash
 ha addons logs local_ha-openapi-server
 ```
 
 **Common issues:**
+
 1. **Missing server.py:**
+
    - Verify `/config/ha-openapi-server/server.py` exists
    - Re-copy server.py to persistent location
 
 2. **Port conflict:**
+
    - Change port in configuration
    - Check `netstat -tulpn | grep 8001`
 
@@ -281,21 +303,26 @@ ha addons logs local_ha-openapi-server
 ### Tools Not Discovered in Open-WebUI
 
 **Verify server is running:**
+
 ```bash
 curl http://YOUR_HA_IP:8001/health
 ```
 
 **Check OpenAPI spec:**
+
 ```bash
 curl http://YOUR_HA_IP:8001/openapi.json
 ```
 
 **Common issues:**
+
 1. **Wrong URL:**
+
    - Use `http://` not `https://`
    - Verify IP address and port
 
 2. **Firewall blocking:**
+
    - Check HA firewall rules
    - Verify port 8001 is accessible
 
@@ -308,6 +335,7 @@ curl http://YOUR_HA_IP:8001/openapi.json
 **This is expected without admin token.**
 
 **To fix:**
+
 1. Generate long-lived access token in HA
 2. Add to addon configuration:
    ```json
@@ -318,6 +346,7 @@ curl http://YOUR_HA_IP:8001/openapi.json
 3. Restart addon
 
 **Verify:**
+
 ```bash
 curl -X POST http://YOUR_HA_IP:8001/list_addons \
   -H "Content-Type: application/json" \
@@ -327,6 +356,7 @@ curl -X POST http://YOUR_HA_IP:8001/list_addons \
 ### Server Logs Show Errors
 
 **Enable debug logging:**
+
 ```json
 {
   "log_level": "debug"
@@ -336,14 +366,17 @@ curl -X POST http://YOUR_HA_IP:8001/list_addons \
 **Common error patterns:**
 
 **`httpx.HTTPStatusError: Client error '401 Unauthorized'`**
+
 - Token not set or invalid
 - Check SUPERVISOR_TOKEN in environment
 
 **`httpx.HTTPStatusError: Client error '403 Forbidden'`**
+
 - Admin token required for this endpoint
 - Add admin_token to configuration
 
 **`FileNotFoundError: [Errno 2] No such file`**
+
 - Missing server.py in /config/ha-openapi-server/
 - Re-copy server.py
 
@@ -400,6 +433,7 @@ rm -rf /config/ha-openapi-server
 ### Optimize for High Load
 
 **Increase workers** (modify run.sh):
+
 ```bash
 exec uvicorn server:app --host 0.0.0.0 --port $PORT \
   --workers 4 --log-level $LOG_LEVEL
@@ -421,6 +455,7 @@ Currently not implemented, planned for v3.1.0.
 ### Long-Lived Token Security
 
 **Best practices:**
+
 - Use separate token for each service
 - Rotate tokens periodically
 - Revoke unused tokens
@@ -429,6 +464,7 @@ Currently not implemented, planned for v3.1.0.
 ### Network Security
 
 **Recommendations:**
+
 - Use internal network only (don't expose to internet)
 - Use reverse proxy with SSL if external access needed
 - Implement rate limiting (planned for v3.1.0)
@@ -437,6 +473,7 @@ Currently not implemented, planned for v3.1.0.
 ### File System Access
 
 **Notes:**
+
 - Server has full /config access
 - Be careful with file operations
 - Backup config before bulk changes
