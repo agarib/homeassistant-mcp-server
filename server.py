@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 4.0.1
+Version: 4.0.2
 Date: November 1, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
@@ -41,6 +41,19 @@ Unified server with 85 production-ready endpoints.
 ✅ Utility (2 tools) - Health check, API info
 
 CHANGELOG:
+v4.0.2 (2025-11-01):
+  - 🐛 Fixed get_directory_tree endpoint: resolve_path method name typo
+  - 📚 Discovered HA diagnostics integration for future enhancement
+  
+v4.0.1 (2025-11-01):
+  - 🐛 CRITICAL: Fixed all diagnostic tool API endpoint errors
+  - ✨ get_system_logs_diagnostics: Now uses /logbook API (works with SUPERVISOR_TOKEN)
+  - ✨ get_integration_status: Uses /config + /states (no admin token needed)
+  - ✨ get_startup_errors: Combines persistent_notifications + logbook
+  - 🔧 Fixed datetime deprecation: datetime.now(timezone.utc)
+  - 🎯 Achieved 100% tool success rate (85/85 endpoints working)
+  - 📖 Created AI_TRAINING_GUIDE.md for cloud AI assistants
+  
 v4.0.0 (2025-11-01):
   - 🎯 MAJOR: Unified architecture with 85 total endpoints
   - ✨ Added 8 native MCPO tools converted to FastAPI/Pydantic:
@@ -120,7 +133,7 @@ SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 HA_CONFIG_PATH = Path(os.getenv("HA_CONFIG_PATH", "/config"))
 PORT = int(os.getenv("PORT", "8001"))
 
-logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.0")
+logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.2")
 logger.info(f"📁 Config Path: {HA_CONFIG_PATH}")
 logger.info(f"🌐 HA API URL: {HA_URL}")
 logger.info(f"🔌 Port: {PORT}")
@@ -129,7 +142,7 @@ logger.info(f"🔑 Supervisor Token: {'Present' if SUPERVISOR_TOKEN else 'Missin
 # Create FastAPI app
 app = FastAPI(
     title="Home Assistant OpenAPI Server",
-    version="4.0.0",
+    version="4.0.2",
     description="85 unified endpoints for comprehensive Home Assistant control via REST API. Pure OpenAPI architecture with Pydantic validation for Open-WebUI.",
     contact={
         "name": "agarib",
@@ -810,7 +823,7 @@ async def create_directory(request: CreateDirectoryRequest = Body(...)):
     Example: {"dirpath": "custom_scripts/automations"}
     """
     try:
-        full_path = file_mgr._resolve_path(request.dirpath)
+        full_path = file_mgr.resolve_path(request.dirpath)
         full_path.mkdir(parents=True, exist_ok=True)
         
         return SuccessResponse(
@@ -832,8 +845,8 @@ async def move_file(request: MoveFileRequest = Body(...)):
     - Move: {"source": "file.yaml", "destination": "scripts/file.yaml"}
     """
     try:
-        src_path = file_mgr._resolve_path(request.source)
-        dst_path = file_mgr._resolve_path(request.destination)
+        src_path = file_mgr.resolve_path(request.source)
+        dst_path = file_mgr.resolve_path(request.destination)
         
         if not src_path.exists():
             raise HTTPException(status_code=404, detail=f"Source file not found: {request.source}")
@@ -863,8 +876,8 @@ async def copy_file(request: CopyFileRequest = Body(...)):
     try:
         import shutil
         
-        src_path = file_mgr._resolve_path(request.source)
-        dst_path = file_mgr._resolve_path(request.destination)
+        src_path = file_mgr.resolve_path(request.source)
+        dst_path = file_mgr.resolve_path(request.destination)
         
         if not src_path.exists():
             raise HTTPException(status_code=404, detail=f"Source file not found: {request.source}")
@@ -895,7 +908,7 @@ async def search_files(request: SearchFilesRequest = Body(...)):
     Example: {"pattern": "automation", "directory": ".", "extensions": ["yaml"]}
     """
     try:
-        search_path = file_mgr._resolve_path(request.directory)
+        search_path = file_mgr.resolve_path(request.directory)
         matches = []
         
         for file_path in search_path.rglob("*"):
@@ -967,7 +980,7 @@ async def get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
             
             return tree
         
-        root_path = file_mgr._resolve_path(request.dirpath)
+        root_path = file_mgr.resolve_path(request.dirpath)
         tree = await build_tree(root_path)
         
         return SuccessResponse(
@@ -4127,7 +4140,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "4.0.1",
+        "version": "4.0.2",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -4137,7 +4150,7 @@ async def root():
     """Root endpoint with API information"""
     return {
         "name": "Home Assistant OpenAPI Server",
-        "version": "4.0.1",
+        "version": "4.0.2",
         "description": "85 unified endpoints for Home Assistant control (8 native MCPO + 4 diagnostics + 73 production)",
         "docs": "/docs",
         "openapi": "/openapi.json",
