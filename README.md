@@ -12,6 +12,7 @@
 ### 🐛 Critical Fixes - 100% Tool Success Rate
 
 - **Fixed All API Endpoint Errors**: Resolved 404 errors in diagnostic tools
+
   - ✅ `get_system_logs_diagnostics` - Now uses logbook API (was broken with non-existent `/error/all`)
   - ✅ `get_integration_status` - Now uses config + states APIs (was broken with `/config_entries`)
   - ✅ `get_startup_errors` - Now uses notifications + logbook (was broken with log file access)

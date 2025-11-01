@@ -7,6 +7,7 @@ All notable changes to the Home Assistant OpenAPI Server project.
 ### 🐛 Fixed
 
 - **Critical API Endpoint Fixes** - Resolved 404 errors in diagnostic tools:
+
   - `get_system_logs_diagnostics` - Rewritten to use `/logbook` API instead of non-existent `/error/all`
   - `get_integration_status` - Rewritten to use `/config` + `/states` instead of non-existent `/config_entries`
   - `get_startup_errors` - Rewritten to use persistent notifications + logbook instead of log files
