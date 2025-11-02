@@ -51,6 +51,41 @@ print(response.json())
 
 ---
 
+## 🚨 CRITICAL: Common Endpoint Naming Mistakes
+
+### ⚠️ THESE ENDPOINTS DON'T EXIST - Use _native Versions!
+
+**Cloud AIs frequently make this mistake:**
+
+```
+❌ /ha_get_services         ← DOES NOT EXIST! Returns 404!
+❌ /ha_get_entity_state     ← DOES NOT EXIST! Returns 404!
+❌ /ha_list_entities        ← DOES NOT EXIST! Returns 404!
+❌ /ha_get_config           ← DOES NOT EXIST! Returns 404!
+
+✅ /ha_get_services_native      ← USE THIS! (with _native suffix)
+✅ /ha_get_entity_state_native  ← USE THIS! (with _native suffix)
+✅ /ha_list_entities_native     ← USE THIS! (with _native suffix)
+✅ /ha_get_config_native        ← USE THIS! (with _native suffix)
+```
+
+**Why _native suffix?**
+These endpoints were converted from the native MCP protocol and retained the `_native` suffix to distinguish them from other HA API wrappers.
+
+**Complete list of _native endpoints:**
+1. `ha_get_entity_state_native` - Get entity state
+2. `ha_list_entities_native` - List all entities
+3. `ha_get_services_native` - List available services
+4. `ha_fire_event_native` - Fire custom events
+5. `ha_render_template_native` - Render Jinja2 templates
+6. `ha_get_config_native` - Get HA configuration
+7. `ha_get_history_native` - Get entity history
+8. `ha_get_logbook_native` - Get logbook entries
+
+**If you get a 404 error, check if you forgot the _native suffix!**
+
+---
+
 ## 🚨 CRITICAL: Tool Naming Convention
 
 ### ⚠️ NAMESPACE SEPARATION - READ THIS FIRST
