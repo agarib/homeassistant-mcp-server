@@ -1,11 +1,29 @@
-# 🏠 Home Assistant OpenAPI Server v4.0.1
+# 🏠 Home Assistant OpenAPI Server v4.0.4
 
 **Production-ready FastAPI server with 85 unified endpoints for comprehensive Home Assistant control via Open-WebUI and MCPO.**
 
-[![GitHub release](https://img.shields.io/badge/version-4.0.1-blue.svg)](https://github.com/agarib/homeassistant-mcp-server/releases)
+[![GitHub release](https://img.shields.io/badge/version-4.0.4-blue.svg)](https://github.com/agarib/homeassistant-mcp-server/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Compatible-41BDF5.svg)](https://www.home-assistant.io/)
 [![Open-WebUI](https://img.shields.io/badge/Open--WebUI-Integrated-orange.svg)](https://github.com/open-webui/open-webui)
+
+## 🌟 What's New in v4.0.4
+
+### 🎯 SIMPLIFIED: Removed _native Suffix
+
+- **Cleaner API**: Removed confusing `_native` suffix from 8 endpoints
+- **No More 404 Errors**: Simplified naming prevents mistakes
+- **Consistent Naming**: All endpoints use simple `ha_` prefix only
+
+**Endpoints Renamed:**
+- `ha_get_entity_state_native` → `ha_get_entity_state`
+- `ha_list_entities_native` → `ha_list_entities`
+- `ha_get_services_native` → `ha_get_services`
+- `ha_fire_event_native` → `ha_fire_event`
+- `ha_render_template_native` → `ha_render_template`
+- `ha_get_config_native` → `ha_get_config`
+- `ha_get_history_native` → `ha_get_history`
+- `ha_get_logbook_native` → `ha_get_logbook`
 
 ## 🌟 What's New in v4.0.1
 
@@ -71,16 +89,16 @@
 - `/get_area_devices` - Get all devices in an area
 - `/get_states` - Get all entity states (filterable)
 
-### Native MCPO Tools (8 tools) ✨ NEW
+### Core HA API Tools (8 tools)
 
-- `/get_entity_state_native` - Get entity state/attributes
-- `/list_entities_native` - List entities by domain
-- `/get_services_native` - List available services
-- `/fire_event_native` - Fire custom events
-- `/render_template_native` - Render Jinja2 templates
-- `/get_config_native` - Get HA configuration
-- `/get_history_native` - Get entity history
-- `/get_logbook_native` - Get logbook entries
+- `/ha_get_entity_state` - Get entity state/attributes
+- `/ha_list_entities` - List entities by domain
+- `/ha_get_services` - List available services
+- `/ha_fire_event` - Fire custom events
+- `/ha_render_template` - Render Jinja2 templates
+- `/ha_get_config` - Get HA configuration
+- `/ha_get_history` - Get entity history
+- `/ha_get_logbook` - Get logbook entries
 
 ### System Diagnostics (4 tools) ✨ NEW
 

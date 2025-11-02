@@ -2,6 +2,41 @@
 
 All notable changes to the Home Assistant OpenAPI Server project.
 
+## [4.0.4] - 2025-11-02
+
+### 🎯 SIMPLIFIED: Removed _native Suffix
+
+**Problem Solved:** The `_native` suffix on 8 endpoints was causing confusion and 404 errors when AI assistants forgot to include it.
+
+### Breaking Changes
+
+- **8 ENDPOINTS RENAMED** by removing confusing `_native` suffix:
+
+  - `ha_get_entity_state_native` → `ha_get_entity_state`
+  - `ha_list_entities_native` → `ha_list_entities`
+  - `ha_get_services_native` → `ha_get_services`
+  - `ha_fire_event_native` → `ha_fire_event`
+  - `ha_render_template_native` → `ha_render_template`
+  - `ha_get_config_native` → `ha_get_config`
+  - `ha_get_history_native` → `ha_get_history`
+  - `ha_get_logbook_native` → `ha_get_logbook`
+
+### 🎨 Benefits
+
+- ✅ **Simpler API** - All endpoints use consistent `ha_` prefix only
+- ✅ **No more 404 errors** - Eliminates confusion from missing `_native` suffix
+- ✅ **Easier to remember** - Straightforward naming without special suffixes
+- ✅ **AI-friendly** - Cleaner for AI assistants to learn and use
+- ✅ **Consistent** - "All come from same server anyway" - no need for suffix distinction
+
+### 📝 Documentation
+
+- Updated AI_TRAINING_EXAMPLES.md to reflect simplified naming
+- Removed obsolete "Common Endpoint Naming Mistakes" warning section
+- Updated CHANGELOG with v4.0.4 release notes
+
+---
+
 ## [4.0.3] - 2025-11-02
 
 ### ✨ Major Enhancement - Tool Namespace Separation

@@ -1,72 +1,16 @@
 # Explanation: Common HA OpenAPI Server Errors
 
-## 🎯 Two Common Issues
-
-### Issue 1: "name not defined" Error
-### Issue 2: 404 "Not Found" Error
+## 🎯 Common Issue: "name not defined" Error
 
 ---
 
-## Issue 1: ❌ "name 'ha_read_file' is not defined"
+## ❌ "name 'ha_read_file' is not defined"
 
 You were trying to call `ha_read_file()`, `ha_write_file()`, etc. as if they were **Python functions**, but they're actually **REST API endpoints**.
 
 ---
 
-## Issue 2: ❌ 404 "Not Found" for ha_get_services, ha_get_entity_state, etc.
-
-### The Problem
-
-```
-404 Not Found: /ha_get_services
-404 Not Found: /ha_get_entity_state  
-404 Not Found: /ha_list_entities
-```
-
-**Why:** These endpoints **DON'T EXIST** - you forgot the `_native` suffix!
-
-### ✅ The Solution
-
-```
-❌ /ha_get_services         → ✅ /ha_get_services_native
-❌ /ha_get_entity_state     → ✅ /ha_get_entity_state_native
-❌ /ha_list_entities        → ✅ /ha_list_entities_native
-❌ /ha_get_config           → ✅ /ha_get_config_native
-❌ /ha_fire_event           → ✅ /ha_fire_event_native
-❌ /ha_render_template      → ✅ /ha_render_template_native
-❌ /ha_get_history          → ✅ /ha_get_history_native
-❌ /ha_get_logbook          → ✅ /ha_get_logbook_native
-```
-
-### Correct Usage Examples
-
-```python
-import requests
-
-# ✅ CORRECT - Get services (note the _native suffix!)
-response = requests.post(
-    "http://192.168.1.203:8001/ha_get_services_native",
-    json={}
-)
-
-# ✅ CORRECT - Get entity state (note the _native suffix!)
-response = requests.post(
-    "http://192.168.1.203:8001/ha_get_entity_state_native",
-    json={"entity_id": "light.living_room"}
-)
-
-# ✅ CORRECT - List entities (note the _native suffix!)
-response = requests.post(
-    "http://192.168.1.203:8001/ha_list_entities_native",
-    json={"domain": "light"}  # optional filter
-)
-```
-
-**Remember:** 8 specific endpoints require the `_native` suffix. If you get 404, check if you forgot it!
-
----
-
-## Issue 1 Details: "name not defined" Error
+## Issue Details: "name not defined" Error
 
 ---
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 4.0.3
-Date: November 1, 2025
+Version: 4.0.4
+Date: November 2, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
 Pure FastAPI/OpenAPI architecture for Open-WebUI integration.
@@ -41,6 +41,14 @@ Unified server with 85 production-ready endpoints.
 ✅ Utility (2 tools) - Health check, API info
 
 CHANGELOG:
+v4.0.4 (2025-11-02):
+  - 🎯 SIMPLIFIED: Removed _native suffix from 8 endpoints for consistency
+  - ✨ Endpoints renamed: ha_get_services_native → ha_get_services, etc.
+  - 🐛 FIXED: Eliminates confusion caused by _native suffix (404 errors)
+  - 🎨 All endpoints now use simple ha_ prefix convention
+  - 📝 Updated: AI training documentation reflects simplified naming
+  - 🚀 Cleaner API: Easier to remember and use (no special suffixes)
+
 v4.0.3 (2025-11-02):
   - 🔧 BREAKING: Renamed all 72 endpoints with ha_ prefix to prevent Open-WebUI tool conflicts
   - ✨ File operations: /write_file → /ha_write_file, /read_file → /ha_read_file
@@ -69,11 +77,11 @@ v4.0.1 (2025-11-01):
   
 v4.0.0 (2025-11-01):
   - 🎯 MAJOR: Unified architecture with 85 total endpoints
-  - ✨ Added 8 native MCPO tools converted to FastAPI/Pydantic:
-    * get_entity_state_native, list_entities_native (discovery)
-    * get_services_native, fire_event_native (system utilities)
-    * render_template_native, get_config_native (configuration)
-    * get_history_native, get_logbook_native (history access)
+  - ✨ Added 8 core HA API tools converted to FastAPI/Pydantic:
+    * ha_get_entity_state, ha_list_entities (discovery)
+    * ha_get_services, ha_fire_event (system utilities)
+    * ha_render_template, ha_get_config (configuration)
+    * ha_get_history, ha_get_logbook (history access)
   - 🆕 Added 4 NEW System Diagnostics tools:
     * get_system_logs_diagnostics - Read HA core logs with filtering
     * get_persistent_notifications - See integration errors & notifications
@@ -146,7 +154,7 @@ SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 HA_CONFIG_PATH = Path(os.getenv("HA_CONFIG_PATH", "/config"))
 PORT = int(os.getenv("PORT", "8001"))
 
-logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.3")
+logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.4")
 logger.info(f"📁 Config Path: {HA_CONFIG_PATH}")
 logger.info(f"🌐 HA API URL: {HA_URL}")
 logger.info(f"🔌 Port: {PORT}")
@@ -155,7 +163,7 @@ logger.info(f"🔑 Supervisor Token: {'Present' if SUPERVISOR_TOKEN else 'Missin
 # Create FastAPI app
 app = FastAPI(
     title="Home Assistant OpenAPI Server",
-    version="4.0.3",
+    version="4.0.4",
     description="85 unified endpoints for comprehensive Home Assistant control via REST API. Pure OpenAPI architecture with Pydantic validation for Open-WebUI.",
     contact={
         "name": "agarib",
@@ -3704,9 +3712,9 @@ async def ha_facial_recognition(request: FacialRecognitionRequest = Body(...)):
 class GetEntityStateNativeRequest(BaseModel):
     entity_id: str = Field(..., description="Entity ID to query")
 
-@app.post("/ha_get_entity_state_native", summary="Get entity state (MCP native)", tags=["native_mcpo"])
+@app.post("/ha_get_entity_state", summary="Get entity state", tags=["native_mcpo"])
 async def ha_get_entity_state(request: GetEntityStateNativeRequest = Body(...)):
-    """Get current state and attributes of any entity (native MCP-style)"""
+    """Get current state and attributes of any entity"""
     try:
         state = await ha_api.get_states(request.entity_id)
         return SuccessResponse(
@@ -3722,7 +3730,7 @@ async def ha_get_entity_state(request: GetEntityStateNativeRequest = Body(...)):
 class ListEntitiesNativeRequest(BaseModel):
     domain: Optional[str] = Field(None, description="Filter by domain (e.g., 'light', 'switch')")
 
-@app.post("/ha_list_entities_native", summary="List all entities (MCP native)", tags=["native_mcpo"])
+@app.post("/ha_list_entities", summary="List all entities", tags=["native_mcpo"])
 async def ha_list_entities(request: ListEntitiesNativeRequest = Body(...)):
     """List all Home Assistant entities, optionally filtered by domain"""
     try:
@@ -3749,8 +3757,8 @@ async def ha_list_entities(request: ListEntitiesNativeRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Get Services (native MCP tool)
-@app.post("/ha_get_services_native", summary="List available services (MCP native)", tags=["native_mcpo"])
+# Get Services
+@app.post("/ha_get_services", summary="List available services", tags=["native_mcpo"])
 async def ha_get_services():
     """Get all available Home Assistant services"""
     try:
@@ -3764,12 +3772,12 @@ async def ha_get_services():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Fire Event (native MCP tool)
+# Fire Event
 class FireEventNativeRequest(BaseModel):
     event_type: str = Field(..., description="Event type to fire")
     event_data: Optional[Dict[str, Any]] = Field(None, description="Event data payload")
 
-@app.post("/ha_fire_event_native", summary="Fire custom event (MCP native)", tags=["native_mcpo"])
+@app.post("/ha_fire_event", summary="Fire custom event", tags=["native_mcpo"])
 async def ha_fire_event(request: FireEventNativeRequest = Body(...)):
     """
     Fire a custom event in Home Assistant.
@@ -3790,11 +3798,11 @@ async def ha_fire_event(request: FireEventNativeRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Render Template (native MCP tool)
+# Render Template
 class RenderTemplateNativeRequest(BaseModel):
     template: str = Field(..., description="Jinja2 template string")
 
-@app.post("/ha_render_template_native", summary="Render Jinja2 template (MCP native)", tags=["native_mcpo"])
+@app.post("/ha_render_template", summary="Render Jinja2 template", tags=["native_mcpo"])
 async def ha_render_template(request: RenderTemplateNativeRequest = Body(...)):
     """
     Render a Jinja2 template using Home Assistant's template engine.
@@ -3814,8 +3822,8 @@ async def ha_render_template(request: RenderTemplateNativeRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Get Config (native MCP tool)
-@app.post("/ha_get_config_native", summary="Get Home Assistant configuration (MCP native)", tags=["native_mcpo"])
+# Get Config
+@app.post("/ha_get_config", summary="Get Home Assistant configuration", tags=["native_mcpo"])
 async def ha_get_config():
     """Get Home Assistant system configuration"""
     try:
@@ -3829,13 +3837,13 @@ async def ha_get_config():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Get History (native MCP tool)
+# Get History
 class GetHistoryNativeRequest(BaseModel):
     entity_id: str = Field(..., description="Entity ID")
     start_time: Optional[str] = Field(None, description="Start time (ISO format)")
     end_time: Optional[str] = Field(None, description="End time (ISO format)")
 
-@app.post("/ha_get_history_native", summary="Get entity history (MCP native)", tags=["native_mcpo"])
+@app.post("/ha_get_history", summary="Get entity history", tags=["native_mcpo"])
 async def ha_get_history(request: GetHistoryNativeRequest = Body(...)):
     """
     Get historical states for an entity.
@@ -3869,13 +3877,13 @@ async def ha_get_history(request: GetHistoryNativeRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Get Logbook (native MCP tool)
+# Get Logbook
 class GetLogbookNativeRequest(BaseModel):
     entity_id: Optional[str] = Field(None, description="Filter by entity ID")
     start_time: Optional[str] = Field(None, description="Start time (ISO format)")
     end_time: Optional[str] = Field(None, description="End time (ISO format)")
 
-@app.post("/ha_get_logbook_native", summary="Get logbook entries (MCP native)", tags=["native_mcpo"])
+@app.post("/ha_get_logbook", summary="Get logbook entries", tags=["native_mcpo"])
 async def ha_get_logbook(request: GetLogbookNativeRequest = Body(...)):
     """
     Get Home Assistant logbook entries (state changes, events).
@@ -4153,7 +4161,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "4.0.3",
+        "version": "4.0.4",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -4163,8 +4171,8 @@ async def root():
     """Root endpoint with API information"""
     return {
         "name": "Home Assistant OpenAPI Server",
-        "version": "4.0.3",
-        "description": "85 unified endpoints for Home Assistant control (8 native MCPO + 4 diagnostics + 73 production)",
+        "version": "4.0.4",
+        "description": "85 unified endpoints for Home Assistant control with simplified ha_ prefix naming",
         "docs": "/docs",
         "openapi": "/openapi.json",
         "health": "/health"

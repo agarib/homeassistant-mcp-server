@@ -1,6 +1,6 @@
 # Home Assistant OpenAPI Server - AI Training Examples
 
-**Version:** 4.0.3  
+**Version:** 4.0.4  
 **Purpose:** Training data for AI models to learn how to control Home Assistant via OpenAPI  
 **Base URL:** `http://192.168.1.203:8001`
 
@@ -48,41 +48,6 @@ print(response.json())
 - Must make HTTP POST requests to `http://192.168.1.203:8001/ha_*` endpoints
 - Use `requests`, `httpx`, `fetch`, or similar HTTP client
 - Follow the JSON request/response format shown in examples below
-
----
-
-## 🚨 CRITICAL: Common Endpoint Naming Mistakes
-
-### ⚠️ THESE ENDPOINTS DON'T EXIST - Use _native Versions!
-
-**Cloud AIs frequently make this mistake:**
-
-```
-❌ /ha_get_services         ← DOES NOT EXIST! Returns 404!
-❌ /ha_get_entity_state     ← DOES NOT EXIST! Returns 404!
-❌ /ha_list_entities        ← DOES NOT EXIST! Returns 404!
-❌ /ha_get_config           ← DOES NOT EXIST! Returns 404!
-
-✅ /ha_get_services_native      ← USE THIS! (with _native suffix)
-✅ /ha_get_entity_state_native  ← USE THIS! (with _native suffix)
-✅ /ha_list_entities_native     ← USE THIS! (with _native suffix)
-✅ /ha_get_config_native        ← USE THIS! (with _native suffix)
-```
-
-**Why _native suffix?**
-These endpoints were converted from the native MCP protocol and retained the `_native` suffix to distinguish them from other HA API wrappers.
-
-**Complete list of _native endpoints:**
-1. `ha_get_entity_state_native` - Get entity state
-2. `ha_list_entities_native` - List all entities
-3. `ha_get_services_native` - List available services
-4. `ha_fire_event_native` - Fire custom events
-5. `ha_render_template_native` - Render Jinja2 templates
-6. `ha_get_config_native` - Get HA configuration
-7. `ha_get_history_native` - Get entity history
-8. `ha_get_logbook_native` - Get logbook entries
-
-**If you get a 404 error, check if you forgot the _native suffix!**
 
 ---
 
@@ -405,16 +370,16 @@ result = response.json()
 - `ha_analyze_states_dataframe` - Analyze states with pandas
 - `ha_plot_sensor_history` - Plot sensor data
 
-#### Native MCPO Tools (9 endpoints)
+#### Core HA API Tools (9 endpoints)
 
-- `ha_get_entity_state_native` - Get entity state (MCP native)
-- `ha_list_entities_native` - List entities (MCP native)
-- `ha_get_services_native` - List services (MCP native)
-- `ha_fire_event_native` - Fire custom event (MCP native)
-- `ha_render_template_native` - Render Jinja2 template (MCP native)
-- `ha_get_config_native` - Get HA configuration (MCP native)
-- `ha_get_history_native` - Get history (MCP native)
-- `ha_get_logbook_native` - Get logbook (MCP native)
+- `ha_get_entity_state` - Get entity state
+- `ha_list_entities` - List entities
+- `ha_get_services` - List services
+- `ha_fire_event` - Fire custom event
+- `ha_render_template` - Render Jinja2 template
+- `ha_get_config` - Get HA configuration
+- `ha_get_history` - Get history
+- `ha_get_logbook` - Get logbook
 - `ha_get_system_logs_diagnostics` - Get system logs (diagnostics)
 
 #### System (4 endpoints)
