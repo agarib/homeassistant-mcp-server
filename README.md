@@ -9,13 +9,14 @@
 
 ## 🌟 What's New in v4.0.4
 
-### 🎯 SIMPLIFIED: Removed _native Suffix
+### 🎯 SIMPLIFIED: Removed \_native Suffix
 
 - **Cleaner API**: Removed confusing `_native` suffix from 8 endpoints
 - **No More 404 Errors**: Simplified naming prevents mistakes
 - **Consistent Naming**: All endpoints use simple `ha_` prefix only
 
 **Endpoints Renamed:**
+
 - `ha_get_entity_state_native` → `ha_get_entity_state`
 - `ha_list_entities_native` → `ha_list_entities`
 - `ha_get_services_native` → `ha_get_services`
@@ -41,10 +42,10 @@
 
 ## 🌟 What's New in v4.0.0
 
-### ✨ NEW: System Diagnostics & Native MCPO Tools
+### ✨ NEW: System Diagnostics & Core HA API Tools
 
 - **12 New Tools Added**:
-  - ✅ 8 Native MCPO tools (entity state, services, events, templates)
+  - ✅ 8 Core HA API tools (entity state, services, events, templates)
   - ✅ 4 System diagnostics tools (logs, notifications, integration status)
 - **Enhanced Architecture**:
   - 📍 Runs as Home Assistant Add-on (not cluster deployment)

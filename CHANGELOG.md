@@ -4,7 +4,7 @@ All notable changes to the Home Assistant OpenAPI Server project.
 
 ## [4.0.4] - 2025-11-02
 
-### 🎯 SIMPLIFIED: Removed _native Suffix
+### 🎯 SIMPLIFIED: Removed \_native Suffix
 
 **Problem Solved:** The `_native` suffix on 8 endpoints was causing confusion and 404 errors when AI assistants forgot to include it.
 
