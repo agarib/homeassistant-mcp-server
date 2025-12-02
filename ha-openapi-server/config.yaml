@@ -1,5 +1,5 @@
 name: Home Assistant OpenAPI Server
-version: "4.0.21"
+version: "4.0.22"
 slug: ha-openapi-server
 description: OpenAPI REST server with 97 endpoints for device control and automation
 url: https://github.com/agarib/homeassistant-mcp-server

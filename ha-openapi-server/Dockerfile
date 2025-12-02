@@ -7,7 +7,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
 
-RUN printf '#!/bin/bash\nset -e\nexport PORT="${PORT:-8001}"\nexport LOG_LEVEL="${LOG_LEVEL:-info}"\nexport HA_TOKEN="${SUPERVISOR_TOKEN}"\nexport HA_URL="http://supervisor/core/api"\nexport HA_CONFIG_PATH="/config"\necho "Starting HA OpenAPI Server v4.0.21..."\nexec python3 -u /config/ha-openapi-server/server.py\n' > /app/run.sh && chmod +x /app/run.sh
+RUN printf '#!/bin/bash\nset -e\nexport PORT="${PORT:-8001}"\nexport LOG_LEVEL="${LOG_LEVEL:-info}"\nexport HA_TOKEN="${SUPERVISOR_TOKEN}"\nexport HA_URL="http://supervisor/core/api"\nexport HA_CONFIG_PATH="/config"\necho "Starting HA OpenAPI Server v4.0.22..."\necho "Token status: ${SUPERVISOR_TOKEN:+Present}${SUPERVISOR_TOKEN:-Missing}"\nexec python3 -u /config/ha-openapi-server/server.py\n' > /app/run.sh && chmod +x /app/run.sh
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8001
