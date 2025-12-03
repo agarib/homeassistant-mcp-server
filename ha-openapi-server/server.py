@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 4.0.27
+Version: 4.0.28
 Date: December 3, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
@@ -47,6 +47,21 @@ Unified server with 97 production-ready endpoints.
 ✅ Utility (2 tools) - Health check, API info
 
 CHANGELOG:
+v4.0.28 (2025-12-03):
+  🤖 CLOUD AI COMPATIBILITY FIX: Added parameter name aliases for better AI assistant compatibility
+  ✅ FIXED: File operation endpoints now accept both snake_case and camelCase parameter names
+  📝 CHANGES:
+     - ReadFileRequest: Accepts both "filepath" and "file_path"
+     - WriteFileRequest: Accepts both "filepath" and "file_path"
+     - DeleteFileRequest: Accepts both "filepath" and "file_path"
+     - ListDirectoryRequest: Accepts both "dirpath" and "dir_path"
+     - CreateDirectoryRequest: Accepts both "dirpath" and "dir_path"
+     - GetDirectoryTreeRequest: Accepts both "dirpath" and "dir_path"
+  🎯 RESULT: Cloud AI assistants (Claude, ChatGPT, Gemini) can now use intuitive parameter names
+  💡 BACKGROUND: Many AI assistants use snake_case (file_path) instead of our camelCase (filepath)
+  🚀 IMPACT: No more 422 validation errors from AI-generated code
+  ✨ BACKWARD COMPATIBLE: Original parameter names still work perfectly
+
 v4.0.27 (2025-12-03):
   🎉 CRITICAL FIX: SUPERVISOR_TOKEN injection resolved
   🔍 ROOT CAUSE: Removal of bashio's `with-contenv` mechanism broke token access
@@ -296,7 +311,7 @@ if not SUPERVISOR_TOKEN:
 HA_CONFIG_PATH = Path(os.getenv("HA_CONFIG_PATH", "/config"))
 PORT = int(os.getenv("PORT", "8001"))
 
-logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.27")
+logger.info(f"🏠 Home Assistant OpenAPI Server v4.0.28")
 logger.info(f"📁 Config Path: {HA_CONFIG_PATH}")
 logger.info(f"🌐 HA API URL: {HA_URL}")
 logger.info(f"🔌 Port: {PORT}")
@@ -305,7 +320,7 @@ logger.info(f"🔑 Supervisor Token: {'Present' if SUPERVISOR_TOKEN else 'Missin
 # Create FastAPI app
 app = FastAPI(
     title="Home Assistant OpenAPI Server",
-    version="4.0.27",
+    version="4.0.28",
     description="97 unified endpoints with 100% success rate - WebSocket + REST hybrid architecture for comprehensive Home Assistant control.",
     contact={
         "name": "agarib",
@@ -699,17 +714,23 @@ class ActivateSceneRequest(BaseModel):
 # ============================================================================
 
 class ReadFileRequest(BaseModel):
-    filepath: str = Field(..., description="Path relative to /config")
+    model_config = {"populate_by_name": True}
+    
+    filepath: str = Field(..., description="Path relative to /config", alias="file_path")
 
 class WriteFileRequest(BaseModel):
-    filepath: str = Field(..., description="Path relative to /config")
+    filepath: str = Field(..., description="Path relative to /config", validation_alias="file_path")
     content: str = Field(..., description="File content to write")
 
 class ListDirectoryRequest(BaseModel):
-    dirpath: str = Field("", description="Directory path relative to /config")
+    model_config = {"populate_by_name": True}
+    
+    dirpath: str = Field("", description="Directory path relative to /config", alias="dir_path")
 
 class DeleteFileRequest(BaseModel):
-    filepath: str = Field(..., description="File path to delete")
+    model_config = {"populate_by_name": True}
+    
+    filepath: str = Field(..., description="File path to delete", alias="file_path")
 
 
 # ============================================================================
@@ -1091,7 +1112,9 @@ async def ha_delete_file(request: DeleteFileRequest = Body(...)):
 
 
 class CreateDirectoryRequest(BaseModel):
-    dirpath: str = Field(..., description="Directory path to create (relative to /config)")
+    model_config = {"populate_by_name": True}
+    
+    dirpath: str = Field(..., description="Directory path to create (relative to /config)", alias="dir_path")
 
 
 class MoveFileRequest(BaseModel):
@@ -1111,7 +1134,9 @@ class SearchFilesRequest(BaseModel):
 
 
 class GetDirectoryTreeRequest(BaseModel):
-    dirpath: str = Field(".", description="Directory path")
+    model_config = {"populate_by_name": True}
+    
+    dirpath: str = Field(".", description="Directory path", alias="dir_path")
     max_depth: int = Field(5, description="Maximum depth to traverse")
 
 class ListFilesRequest(BaseModel):
@@ -5525,7 +5550,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "4.0.27",
+        "version": "4.0.28",
         "endpoints": 97,
         "working": 97,
         "success_rate": "100%",
