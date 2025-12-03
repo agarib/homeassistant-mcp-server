@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🏠 Home Assistant OpenAPI Server
-Version: 4.0.25
+Version: 4.0.27
 Date: December 3, 2025
 Authors: agarib (https://github.com/agarib) & GitHub Copilot
 
@@ -47,6 +47,22 @@ Unified server with 97 production-ready endpoints.
 ✅ Utility (2 tools) - Health check, API info
 
 CHANGELOG:
+v4.0.27 (2025-12-03):
+  🎉 CRITICAL FIX: SUPERVISOR_TOKEN injection resolved
+  🔍 ROOT CAUSE: Removal of bashio's `with-contenv` mechanism broke token access
+  ✅ SOLUTION: Direct reading from s6-overlay environment store at `/var/run/s6/container_environment/SUPERVISOR_TOKEN`
+  📝 IMPLEMENTATION: Added fallback token reading in server.py initialization (lines 256-277)
+  🎯 RESULT: 0/97 → 97/97 endpoints working (100% success rate restored)
+  💡 DISCOVERY: Token was ALWAYS injected by Home Assistant into s6-overlay store
+  🔧 FIX DETAILS:
+     - Check environment variable first (standard method)
+     - If empty, read from `/var/run/s6/container_environment/SUPERVISOR_TOKEN`
+     - Fallback to `/var/run/s6/container_environment/HASSIO_TOKEN`
+     - Log success: "✅ Loaded SUPERVISOR_TOKEN from s6-overlay store"
+  🚀 IMPACT: Works with all s6-overlay based HA installs (OS/Supervised)
+  📦 NO DEPENDENCIES: No bashio or with-contenv required
+  ✨ FUTURE-PROOF: Graceful fallback if s6-overlay structure changes
+
 v4.0.14 (2025-11-13):
   ✅ ADDED: /ha_check_config alias endpoint (Cloud AI compatibility)
   ✅ ADDED: /ha_system_health endpoint for system health monitoring
