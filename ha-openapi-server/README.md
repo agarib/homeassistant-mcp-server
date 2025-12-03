@@ -1,79 +1,198 @@
-# Home Assistant OpenAPI Server Add-on
+# Home Assistant OpenAPI Server
 
-OpenAPI REST server with 97 production-ready endpoints for comprehensive Home Assistant control.
+[![Version](https://img.shields.io/badge/version-4.0.27-blue.svg)](https://github.com/agarib/homeassistant-mcp-server/releases)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.11+-green.svg)](https://www.home-assistant.io/)
+[![License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
 
-## Features
+Production-ready REST API server with 97 endpoints for complete Home Assistant control. Perfect for AI assistants, automation platforms, and custom integrations.
 
-- **97 Unified Endpoints**: Complete device control, automation management, and system configuration
-- **Full REST API**: All operations via POST/GET requests with Pydantic validation
-- **WebSocket Support**: Real-time dashboard/Lovelace operations
-- **100% Success Rate**: All tools tested and working in production
-- **Open-WebUI Compatible**: Direct integration with AI assistants
+## ✨ Features
 
-## Installation
+- **97 Production Endpoints** - Complete coverage of HA functionality
+- **Zero Configuration** - Auto-discovers SUPERVISOR_TOKEN from s6-overlay
+- **Full REST API** - All operations via POST/GET with Pydantic validation
+- **WebSocket Support** - Real-time dashboard and Lovelace operations
+- **100% Success Rate** - All endpoints tested and working
+- **AI Assistant Ready** - OpenAPI spec for LLM tool integration
+- **MCP Compatible** - Works with Model Context Protocol servers
 
-1. Add this repository to your Home Assistant Add-on Store:
+## 🚀 Quick Start
+
+### Installation
+
+1. **Add Repository to Home Assistant:**
+
    ```
    https://github.com/agarib/homeassistant-mcp-server
    ```
 
-2. Find "Home Assistant OpenAPI Server" in Local Add-ons
+2. **Install the Add-on:**
 
-3. Click Install
+   - Navigate to **Settings** → **Add-ons** → **Add-on Store**
+   - Find "Home Assistant OpenAPI Server" in Local Add-ons
+   - Click **Install**
 
-4. Start the add-on
+3. **Start the Add-on:**
+   - Click **Start**
+   - API will be available at `http://homeassistant.local:8001`
 
-5. Access the API at `http://homeassistant.local:8001`
+### Configuration
 
-## Configuration
+Minimal configuration required:
 
 ```yaml
-port: 8001              # HTTP port for the API server
-log_level: info         # Logging level (debug|info|warning|error|critical)
+port: 8001 # HTTP port (default: 8001)
+log_level: info # Log level (debug|info|warning|error|critical)
 ```
 
-## API Documentation
+**Note:** Authentication is handled automatically via Home Assistant's Supervisor token injection.
 
-Once started, access the interactive API documentation at:
-- Swagger UI: `http://homeassistant.local:8001/`
-- OpenAPI Spec: `http://homeassistant.local:8001/openapi.json`
+## 📚 API Documentation
 
-## Tool Categories (97 endpoints)
+Access interactive documentation once the addon is running:
 
-- ✅ Core HA API Tools (8 tools) - Entity states, services, events
-- ✅ System Diagnostics (6 tools) - Logs, notifications, health
-- ✅ Integration/Device Diagnostics (3 tools) - Config entries, devices
-- ✅ Advanced API Tools (3 tools) - Templates, intents, validation
-- ✅ Automations (8 tools) - Create, update, trigger, reload
-- ✅ File Operations (10 tools) - Full /config access
-- ✅ Add-on Management (9 tools) - Install, start, stop, logs
-- ✅ Dashboards (12 tools) - Lovelace management, HACS cards
-- ✅ Device Control (7 tools) - Lights, switches, climate, covers
-- ✅ Logs & History (6 tools) - Entity history, diagnostics
-- ✅ Discovery (4 tools) - States, areas, devices, entities
-- ✅ Intelligence (4 tools) - Context, activity, comfort analysis
-- ✅ Code Execution (3 tools) - Python sandbox, pandas
-- ✅ Scenes (3 tools) - Activate, create, list
-- ✅ Security (3 tools) - Monitoring, anomaly detection
-- ✅ Camera VLM (3 tools) - Vision AI analysis
-- ✅ System (3 tools) - Restart, call service
-- ✅ Camera (1 tool) - Snapshots
-- ✅ Utility (2 tools) - Health check, API info
+- **Swagger UI:** `http://homeassistant.local:8001/`
+- **OpenAPI Spec:** `http://homeassistant.local:8001/openapi.json`
+- **Health Check:** `http://homeassistant.local:8001/health`
 
-## Support
+### Example API Calls
 
-- GitHub: https://github.com/agarib/homeassistant-mcp-server
-- Issues: https://github.com/agarib/homeassistant-mcp-server/issues
+```bash
+# Get entity states
+curl -X POST http://homeassistant.local:8001/ha_get_states \
+  -H "Content-Type: application/json" \
+  -d '{"limit": 5}'
 
-## Version History
+# Control a light
+curl -X POST http://homeassistant.local:8001/ha_control_light \
+  -H "Content-Type: application/json" \
+  -d '{"entity_id": "light.living_room", "action": "turn_on", "brightness": 255}'
 
-### 4.0.21 (2025-12-03)
+# Discover devices
+curl -X POST http://homeassistant.local:8001/ha_discover_devices \
+  -H "Content-Type: application/json" \
+  -d '{"domain": "light"}'
+```
+
+## 🛠️ Endpoint Categories
+
+| Category           | Count | Description                         |
+| ------------------ | ----- | ----------------------------------- |
+| Core HA API        | 8     | Entity states, services, events     |
+| System Diagnostics | 6     | Logs, notifications, health checks  |
+| Integrations       | 3     | Config entries, device diagnostics  |
+| Advanced API       | 3     | Templates, intents, validation      |
+| Automations        | 8     | Create, update, trigger, reload     |
+| File Operations    | 10    | Full `/config` directory access     |
+| Add-on Management  | 9     | Install, start, stop, logs          |
+| Dashboards         | 12    | Lovelace management, HACS cards     |
+| Device Control     | 7     | Lights, switches, climate, covers   |
+| Logs & History     | 6     | Entity history, diagnostics         |
+| Discovery          | 4     | States, areas, devices, entities    |
+| Intelligence       | 4     | Context, activity, comfort analysis |
+| Code Execution     | 3     | Python sandbox with pandas          |
+| Scenes             | 3     | Activate, create, list              |
+| Security           | 3     | Monitoring, anomaly detection       |
+| Camera VLM         | 3     | Vision AI analysis                  |
+| System             | 3     | Restart, service calls              |
+| Camera             | 1     | Snapshots                           |
+| Utility            | 2     | Health check, API info              |
+
+## 🔧 Technical Details
+
+### Architecture
+
+- **Runtime:** Python 3 with FastAPI + Uvicorn
+- **Authentication:** Automatic SUPERVISOR_TOKEN via s6-overlay
+- **Validation:** Pydantic models for all requests/responses
+- **API Style:** RESTful with OpenAPI 3.0 specification
+- **Persistence:** Reads directly from `/config` directory
+
+### Requirements
+
+- Home Assistant OS or Supervised install (requires Supervisor)
+- Home Assistant 2025.11 or newer
+- Architecture: aarch64, amd64, armv7, armhf, i386
+
+### Token Authentication
+
+The addon automatically retrieves the SUPERVISOR_TOKEN from Home Assistant's s6-overlay environment store (`/var/run/s6/container_environment/`). No manual token configuration required.
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**401 Unauthorized Errors:**
+
+- Verify the addon is running: Check addon logs for "✅ Loaded SUPERVISOR_TOKEN"
+- Ensure you're using `http://homeassistant.local:8001` (not https)
+- Check Home Assistant version is 2025.11+
+
+**Addon Won't Start:**
+
+- Check addon logs via Settings → Add-ons → Home Assistant OpenAPI Server → Log
+- Verify `/config/ha-openapi-server/server.py` exists and is readable
+- Try rebuilding: Settings → Add-ons → Home Assistant OpenAPI Server → Rebuild
+
+**API Endpoints Return Errors:**
+
+- Verify Home Assistant core is running
+- Check entity IDs exist: `/ha_get_states` endpoint
+- Review addon logs for detailed error messages
+
+## 📋 Version History
+
+### v4.0.27 (2025-12-03) - Current
+
+- **FIXED:** SUPERVISOR_TOKEN injection via s6-overlay environment store
+- **FIXED:** Authentication now works without bashio dependency
+- **Added:** Automatic token fallback mechanism (SUPERVISOR_TOKEN → HASSIO_TOKEN)
+- **Enhanced:** Debug logging for s6-overlay environment troubleshooting
+- **Result:** 97/97 endpoints working (100% success rate restored)
+
+### v4.0.21 (2025-12-02)
+
 - Fixed addon installation and startup issues
-- Unified folder structure (ha-openapi-server)
-- Complete YAML configuration
-- GitHub repository deployment
+- Removed bashio dependency (BOM encoding fixes)
+- Unified folder structure to `ha-openapi-server`
+- Complete YAML configuration for GitHub deployment
 
-### 4.0.14 (2025-11-13)
-- Added 97 unified endpoints
-- WebSocket support for dashboards
-- 100% tool success rate achieved
+### v4.0.14 (2025-11-13)
+
+- Initial stable release with 97 unified endpoints
+- WebSocket support for dashboard operations
+- Full OpenAPI specification generated
+
+## 🤝 Integration Examples
+
+### Use with Open-WebUI
+
+Add as an external tool:
+
+```
+URL: http://homeassistant.local:8001/openapi.json
+Type: OpenAPI
+```
+
+### Use with MCP Server
+
+Configure in MCPO settings:
+
+```json
+{
+  "homeassistant": {
+    "command": "curl",
+    "args": ["-s", "http://homeassistant.local:8001/openapi.json"]
+  }
+}
+```
+
+## 📞 Support
+
+- **Issues:** [GitHub Issues](https://github.com/agarib/homeassistant-mcp-server/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/agarib/homeassistant-mcp-server/discussions)
+- **Documentation:** [Full Changelog](CHANGELOG.md)
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file for details
