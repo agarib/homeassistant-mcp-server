@@ -5509,7 +5509,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "homeassistant-openapi-server",
-        "version": "4.0.26",
+        "version": "4.0.27",
         "endpoints": 97,
         "working": 97,
         "success_rate": "100%",
