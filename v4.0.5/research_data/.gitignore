@@ -1,0 +1,5 @@
+# Ignore research data files (may contain sensitive info)
+*.json
+
+# Keep directory structure
+!.gitkeep

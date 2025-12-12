@@ -46,7 +46,7 @@
    **Next Steps:**
 
    - [ ] Integrate 16 tools into `server.py` (manual, follow CONSOLIDATION_GUIDE.md)
-   - [ ] Test locally at http://localhost:8001/docs
+   - [ ] Test locally at <http://localhost:8001/docs>
    - [ ] Deploy to K3s cluster
    - [ ] Test washing machine diagnostics workflow
    - [ ] Fix LG ThinQ integration based on diagnostics

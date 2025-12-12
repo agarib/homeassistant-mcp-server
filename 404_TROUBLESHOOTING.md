@@ -5,11 +5,13 @@
 This document described 404 errors caused by the `_native` suffix on 8 endpoints.
 
 **As of v4.0.4 (2025-11-02):**
+
 - The confusing `_native` suffix has been REMOVED
 - All endpoints now use simple `ha_` prefix only
 - No more special naming cases to remember
 
 **Old naming (v4.0.3):**
+
 ```
 ha_get_services_native
 ha_get_entity_state_native
@@ -22,6 +24,7 @@ ha_get_logbook_native
 ```
 
 **New naming (v4.0.4+):**
+
 ```
 ha_get_services          ← Simplified!
 ha_get_entity_state      ← Simplified!
@@ -49,7 +52,7 @@ These 8 endpoints were originally from the MCP (Model Context Protocol) native s
 2. Maintain compatibility with existing documentation
 3. Make it clear they're direct MCP protocol conversions
 
-### How to verify endpoints exist:
+### How to verify endpoints exist
 
 ```bash
 # Check OpenAPI spec
@@ -59,7 +62,7 @@ curl http://192.168.1.203:8001/openapi.json | jq '.paths | keys'
 open http://192.168.1.203:8001/docs
 ```
 
-### Complete list of \_native endpoints (8 total):
+### Complete list of \_native endpoints (8 total)
 
 | Endpoint                     | Purpose                 | Example                                           |
 | ---------------------------- | ----------------------- | ------------------------------------------------- |
@@ -72,7 +75,7 @@ open http://192.168.1.203:8001/docs
 | `ha_get_history_native`      | Get entity history      | `{"entity_id": "...", "start_time": "..."}`       |
 | `ha_get_logbook_native`      | Get logbook entries     | `{"entity_id": "...", "start_time": "..."}`       |
 
-### Other tools that ALSO have specific naming:
+### Other tools that ALSO have specific naming
 
 **Diagnostics tools (no \_native, but specific naming):**
 
@@ -87,7 +90,7 @@ open http://192.168.1.203:8001/docs
 - `ha_read_file` (NOT `tool_read_file`)
 - `ha_list_directory` (NOT `tool_list_files`)
 
-### Quick Test:
+### Quick Test
 
 ```python
 import requests
@@ -107,7 +110,7 @@ response = requests.post(
 # Result: 200 OK
 ```
 
-### For Open-WebUI AI Assistants:
+### For Open-WebUI AI Assistants
 
 If you're getting 404 errors:
 
@@ -117,13 +120,13 @@ If you're getting 404 errors:
 4. 8 specific endpoints require `_native` suffix
 5. Refer to AI_TRAINING_EXAMPLES.md for complete list
 
-### Verification Checklist:
+### Verification Checklist
 
 - [ ] Does the endpoint start with `ha_`?
 - [ ] If it's a native endpoint, does it end with `_native`?
 - [ ] Are you using POST method (not GET)?
 - [ ] Is your JSON payload correct?
-- [ ] Are you testing against the right URL (http://192.168.1.203:8001)?
+- [ ] Are you testing against the right URL (<http://192.168.1.203:8001>)?
 
 ### Still Getting 404?
 
@@ -134,4 +137,4 @@ curl http://192.168.1.203:8001/openapi.json | jq '.paths | keys' | grep "ha_"
 ```
 
 Or use the interactive docs:
-http://192.168.1.203:8001/docs
+<http://192.168.1.203:8001/docs>
