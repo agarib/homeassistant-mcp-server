@@ -9,7 +9,7 @@ from app.models.system import (
 router = APIRouter(tags=["system"])
 
 @router.post("/get_system_logs_diagnostics", operation_id="get_system_logs_diagnostics", summary="Get system logs")
-async def ha_get_system_logs(request: GetSystemLogsNewRequest = Body(...)):
+async def get_system_logs(request: GetSystemLogsNewRequest = Body(...)):
     """Read HA core logs via WebSocket system_log/list.
 
     The supervisor proxy blocks the REST /logbook endpoint (404), so we use
@@ -43,7 +43,7 @@ async def ha_get_system_logs(request: GetSystemLogsNewRequest = Body(...)):
     )
 
 @router.post("/get_persistent_notifications", operation_id="get_persistent_notifications", summary="Get notifications")
-async def ha_get_persistent_notifications():
+async def get_persistent_notifications():
     """Get persistent notifications."""
     states = await ha_api.get_states()
     notifications = [
@@ -55,7 +55,7 @@ async def ha_get_persistent_notifications():
     )
 
 @router.post("/restart_homeassistant", operation_id="restart_homeassistant", summary="Restart HA")
-async def ha_restart_homeassistant(request: RestartHomeAssistantRequest = Body(...)):
+async def restart_homeassistant(request: RestartHomeAssistantRequest = Body(...)):
     """Restart Home Assistant Core."""
     if request.confirm:
         await ha_api.call_service("homeassistant", "restart")
@@ -64,13 +64,13 @@ async def ha_restart_homeassistant(request: RestartHomeAssistantRequest = Body(.
         return SuccessResponse(message="Restart not confirmed", data={"confirmed": False})
 
 @router.post("/check_config", operation_id="check_config", summary="Check HA configuration")
-async def ha_check_config(request: CheckConfigRequest = Body(...)):
+async def check_config(request: CheckConfigRequest = Body(...)):
     """Check Home Assistant configuration validation."""
     result = await ha_api.call_service("homeassistant", "check_config")
     return SuccessResponse(message="Configuration check initiated", data=result)
 
 @router.post("/system_health", operation_id="system_health", summary="Get system health")
-async def ha_system_health(request: GetSystemHealthRequest = Body(...)):
+async def system_health(request: GetSystemHealthRequest = Body(...)):
     """Get Home Assistant system health info."""
     # Get config for version info
     config = await ha_api.call_api("GET", "/config")
@@ -102,7 +102,7 @@ class GetRepairsRequest(BaseModel):
     active_only: Optional[bool] = Field(True, description="Only return active (non-dismissed) issues")
 
 @router.post("/get_repairs", operation_id="get_repairs", summary="Get HA repair issues")
-async def ha_get_repairs(request: GetRepairsRequest = Body(default_factory=GetRepairsRequest)):
+async def get_repairs(request: GetRepairsRequest = Body(default_factory=GetRepairsRequest)):
     """List Home Assistant repair issues via WebSocket repairs/list_issues.
 
     Returns issues raised by integrations (config problems, deprecated config,

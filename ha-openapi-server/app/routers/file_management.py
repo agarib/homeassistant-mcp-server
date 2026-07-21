@@ -12,44 +12,44 @@ from app.models.files import (
 router = APIRouter(tags=["file_management"])
 
 @router.post("/read_file", operation_id="read_file", summary="Read file content")
-async def ha_read_file(request: ReadFileRequest = Body(...)):
+async def read_file(request: ReadFileRequest = Body(...)):
     """Read content of a text file from the HA config directory."""
-    content = await file_mgr.ha_read_file(request.filepath)
+    content = await file_mgr.read_file(request.filepath)
     return SuccessResponse(
         message=f"Read {len(content)} bytes from {request.filepath}",
         data={"content": content, "filepath": request.filepath}
     )
 
 @router.post("/write_file", operation_id="write_file", summary="Write file content")
-async def ha_write_file(request: WriteFileRequest = Body(...)):
+async def write_file(request: WriteFileRequest = Body(...)):
     """Write content to a file in the HA config directory."""
-    result = await file_mgr.ha_write_file(request.filepath, request.content)
+    result = await file_mgr.write_file(request.filepath, request.content)
     return SuccessResponse(message=result)
 
 @router.post("/list_directory", operation_id="list_directory", summary="List directory contents")
-async def ha_list_directory(request: ListDirectoryRequest = Body(...)):
+async def list_directory(request: ListDirectoryRequest = Body(...)):
     """List files and directories in a path."""
-    items = await file_mgr.ha_list_directory(request.dirpath)
+    items = await file_mgr.list_directory(request.dirpath)
     return SuccessResponse(message=f"Found {len(items)} items in {request.dirpath or 'root'}", data=items)
 
 @router.post("/delete_file", operation_id="delete_file", summary="Delete a file")
-async def ha_delete_file(request: DeleteFileRequest = Body(...)):
+async def delete_file(request: DeleteFileRequest = Body(...)):
     """Delete a file from the config directory."""
-    result = await file_mgr.ha_delete_file(request.filepath)
+    result = await file_mgr.delete_file(request.filepath)
     return SuccessResponse(message=result)
 
 @router.post("/make_directory", operation_id="make_directory", summary="Create a directory")
-async def ha_make_directory(request: MakeDirectoryRequest = Body(...)):
+async def make_directory(request: MakeDirectoryRequest = Body(...)):
     """Create a new directory."""
-    path = file_mgr.ha_resolve_path(request.dirpath)
+    path = file_mgr.resolve_path(request.dirpath)
     path.mkdir(parents=True, exist_ok=True)
     return SuccessResponse(message=f"Directory created: {request.dirpath}")
 
 @router.post("/move_file", operation_id="move_file", summary="Move or rename a file")
-async def ha_move_file(request: MoveFileRequest = Body(...)):
+async def move_file(request: MoveFileRequest = Body(...)):
     """Move or rename a file."""
-    src = file_mgr.ha_resolve_path(request.source_path)
-    dst = file_mgr.ha_resolve_path(request.dest_path)
+    src = file_mgr.resolve_path(request.source_path)
+    dst = file_mgr.resolve_path(request.dest_path)
     
     if not src.exists():
         raise HTTPException(status_code=404, detail=f"Source not found: {request.source_path}")
@@ -60,11 +60,11 @@ async def ha_move_file(request: MoveFileRequest = Body(...)):
     return SuccessResponse(message=f"Moved {request.source_path} to {request.dest_path}")
 
 @router.post("/copy_file", operation_id="copy_file", summary="Copy a file")
-async def ha_copy_file(request: CopyFileRequest = Body(...)):
+async def copy_file(request: CopyFileRequest = Body(...)):
     """Copy a file."""
     import shutil
-    src = file_mgr.ha_resolve_path(request.source_path)
-    dst = file_mgr.ha_resolve_path(request.dest_path)
+    src = file_mgr.resolve_path(request.source_path)
+    dst = file_mgr.resolve_path(request.dest_path)
     
     if not src.is_file():
         raise HTTPException(status_code=400, detail=f"Source is not a file: {request.source_path}")
@@ -73,9 +73,9 @@ async def ha_copy_file(request: CopyFileRequest = Body(...)):
     return SuccessResponse(message=f"Copied {request.source_path} to {request.dest_path}")
 
 @router.post("/search_files", operation_id="search_files", summary="Search for files")
-async def ha_search_files(request: SearchFilesRequest = Body(...)):
+async def search_files(request: SearchFilesRequest = Body(...)):
     """Search for files using regex or glob patterns."""
-    root = file_mgr.ha_resolve_path(request.path)
+    root = file_mgr.resolve_path(request.path)
     
     if not root.exists():
         raise HTTPException(status_code=404, detail=f"Path not found: {request.path}")
@@ -121,9 +121,9 @@ async def ha_search_files(request: SearchFilesRequest = Body(...)):
     return SuccessResponse(message=f"Found {len(matches)} matches", data=matches)
 
 @router.post("/list_files", operation_id="list_files", summary="List files with filtering")
-async def ha_list_files(request: ListFilesRequest = Body(...)):
+async def list_files(request: ListFilesRequest = Body(...)):
     """List files, optionally filtering by extension."""
-    root = file_mgr.ha_resolve_path(request.path)
+    root = file_mgr.resolve_path(request.path)
     
     if not root.exists():
         raise HTTPException(status_code=404, detail=f"Path not found: {request.path}")
@@ -157,9 +157,9 @@ async def ha_list_files(request: ListFilesRequest = Body(...)):
     return SuccessResponse(message=f"Found {len(matches)} files", data=matches)
 
 @router.post("/get_directory_tree", operation_id="get_directory_tree", summary="Get directory tree")
-async def ha_get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
+async def get_directory_tree(request: GetDirectoryTreeRequest = Body(...)):
     """Get recursive directory structure."""
-    root = file_mgr.ha_resolve_path(request.dirpath)
+    root = file_mgr.resolve_path(request.dirpath)
     
     if not root.exists():
         raise HTTPException(status_code=404, detail=f"Path not found: {request.dirpath}")

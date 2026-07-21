@@ -10,7 +10,7 @@ from app.models.device import (
 router = APIRouter(tags=["discovery"])
 
 @router.post("/list_entities", operation_id="list_entities", summary="List all entities")
-async def ha_list_entities():
+async def list_entities():
     """List all entities currently tracking state."""
     states = await ha_api.get_states()
     return SuccessResponse(
@@ -25,7 +25,7 @@ async def ha_list_entities():
     )
 
 @router.post("/get_entity_state", operation_id="get_entity_state", summary="Get entity state")
-async def ha_get_entity_state(request: GetDeviceStateRequest):
+async def get_entity_state(request: GetDeviceStateRequest):
     """Get the current state of a specific entity."""
     state = await ha_api.get_states(request.entity_id)
     return SuccessResponse(
@@ -34,7 +34,7 @@ async def ha_get_entity_state(request: GetDeviceStateRequest):
     )
 
 @router.post("/get_services", operation_id="get_services", summary="Get available services")
-async def ha_get_services():
+async def get_services():
     """List all available services by domain."""
     services = await ha_api.get_services()
     return SuccessResponse(
@@ -43,7 +43,7 @@ async def ha_get_services():
     )
 
 @router.post("/call_service", operation_id="call_service", summary="Call a service")
-async def ha_call_service(request: CallServiceRequest):
+async def call_service(request: CallServiceRequest):
     """Generic tool to call any Home Assistant service."""
     result = await ha_api.call_service(
         request.domain,
@@ -57,7 +57,7 @@ async def ha_call_service(request: CallServiceRequest):
     )
 
 @router.post("/list_areas", operation_id="list_areas", summary="List configured areas")
-async def ha_list_areas():
+async def list_areas():
     """List all areas configured in Home Assistant."""
     # Note: Modern HA uses WebSocket/Registry for this, implementing via template/service fallback or ws
     # For now, using direct API simulation or known registries if available
@@ -90,7 +90,7 @@ async def ha_list_areas():
     )
 
 @router.post("/list_devices", operation_id="list_devices", summary="List devices")
-async def ha_list_devices():
+async def list_devices():
     """List all devices in the device registry."""
     from app.core.clients import get_ws_client
     ws = await get_ws_client()

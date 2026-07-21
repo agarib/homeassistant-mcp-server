@@ -8,44 +8,11 @@ import uvicorn
 import os
 import sys
 import logging
-import subprocess
 
 # Add current directory to python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# -----------------------------------------------------------------------------
-# AUTO-INSTALL DEPENDENCIES (Self-Healing)
-# -----------------------------------------------------------------------------
-def install_dependencies():
-    """Install dependencies if they are missing (handles non-rebuilt containers)."""
-    missing = []
-    try:
-        import pydantic_settings
-    except ImportError:
-        missing.append("pydantic-settings>=2.12.0")
-        missing.append("pydantic>=2.0.0")
-    
-    # Check analysis libraries
-    for lib in ["pandas", "numpy", "matplotlib", "seaborn"]:
-        try:
-            __import__(lib)
-        except ImportError:
-            missing.append(lib)
-    
-    if missing:
-        print(f"🔧 Missing dependencies: {missing}. Auto-installing...")
-        try:
-            subprocess.check_call([
-                sys.executable, "-m", "pip", "install", 
-                "--break-system-packages"
-            ] + missing)
-            print("✅ Dependencies installed successfully.")
-        except Exception as e:
-            print(f"❌ Failed to auto-install dependencies: {e}")
-
-# Run install check before any app imports
-print("=== BOOT: loading server.py from /config === [DIAGNOSTIC]")
-install_dependencies()
+# Auto-install removed — deps are now installed at Docker build time via requirements.txt
 
 # Configure basic logging for startup before app takes over
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

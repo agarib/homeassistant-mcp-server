@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["intelligence"])
 
 @router.post("/analyze_home_context", operation_id="analyze_home_context", summary="Analyze complete home context")
-async def ha_analyze_home_context(request: AnalyzeHomeContextRequest = Body(...)):
+async def analyze_home_context(request: AnalyzeHomeContextRequest = Body(...)):
     """
     Analyzes current state: occupancy, activity, time of day, weather, energy usage.
     
@@ -94,7 +94,7 @@ async def ha_analyze_home_context(request: AnalyzeHomeContextRequest = Body(...)
 
 
 @router.post("/activity_recognition", operation_id="activity_recognition", summary="AI activity recognition")
-async def ha_activity_recognition(request: ActivityRecognitionRequest = Body(...)):
+async def activity_recognition(request: ActivityRecognitionRequest = Body(...)):
     """
     Infer current activity from sensors, devices, time, and patterns.
     Detects: sleeping, cooking, working, watching TV, etc.
@@ -171,7 +171,7 @@ async def ha_activity_recognition(request: ActivityRecognitionRequest = Body(...
 
 
 @router.post("/comfort_optimization", operation_id="comfort_optimization", summary="Multi-factor comfort optimization")
-async def ha_comfort_optimization(request: ComfortOptimizationRequest = Body(...)):
+async def comfort_optimization(request: ComfortOptimizationRequest = Body(...)):
     """
     Optimizes for comfort: temperature, lighting, air quality, noise level.
     
@@ -266,7 +266,7 @@ async def ha_comfort_optimization(request: ComfortOptimizationRequest = Body(...
 
 
 @router.post("/energy_intelligence", operation_id="energy_intelligence", summary="Energy usage analysis & optimization")
-async def ha_energy_intelligence(request: EnergyIntelligenceRequest = Body(...)):
+async def energy_intelligence(request: EnergyIntelligenceRequest = Body(...)):
     """
     Analyzes energy consumption and provides recommendations.
     

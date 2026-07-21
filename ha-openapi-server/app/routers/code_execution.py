@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["code_execution"])
 
 @router.post("/execute_python", operation_id="execute_python", summary="Execute Python code with pandas/matplotlib")
-async def ha_execute_python(request: ExecutePythonRequest = Body(...)):
+async def execute_python(request: ExecutePythonRequest = Body(...)):
     """
     Execute Python code in sandbox with pandas, numpy, matplotlib available.
     Returns stdout output and/or base64-encoded plots.
@@ -102,7 +102,7 @@ async def ha_execute_python(request: ExecutePythonRequest = Body(...)):
 
 
 @router.post("/analyze_states_dataframe", operation_id="analyze_states_dataframe", summary="Get HA states as pandas DataFrame")
-async def ha_analyze_states_dataframe(request: AnalyzeStatesRequest = Body(...)):
+async def analyze_states_dataframe(request: AnalyzeStatesRequest = Body(...)):
     """
     Get Home Assistant states as a pandas DataFrame for analysis.
     Returns JSON representation of the DataFrame.
@@ -172,7 +172,7 @@ async def ha_analyze_states_dataframe(request: AnalyzeStatesRequest = Body(...))
 
 
 @router.post("/plot_sensor_history", operation_id="plot_sensor_history", summary="Plot sensor history chart")
-async def ha_plot_sensor_history(request: PlotSensorHistoryRequest = Body(...)):
+async def plot_sensor_history(request: PlotSensorHistoryRequest = Body(...)):
     """
     Plot sensor history as a time-series chart.
     Returns base64-encoded PNG image.

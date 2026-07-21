@@ -20,7 +20,7 @@ router = APIRouter(tags=["dashboards"])
 
 
 @router.post("/list_dashboards", operation_id="list_dashboards", summary="List all Lovelace dashboards")
-async def ha_list_dashboards(request: ListDashboardsRequest = Body(default_factory=ListDashboardsRequest)):
+async def list_dashboards(request: ListDashboardsRequest = Body(default_factory=ListDashboardsRequest)):
     """List all Lovelace dashboards via WebSocket.
     Returns the default dashboard (lovelace) plus any custom dashboards.
     """
@@ -48,7 +48,7 @@ async def ha_list_dashboards(request: ListDashboardsRequest = Body(default_facto
 
 
 @router.post("/get_dashboard_config", operation_id="get_dashboard_config", summary="Get dashboard config")
-async def ha_get_dashboard_config(request: GetDashboardConfigRequest = Body(...)):
+async def get_dashboard_config(request: GetDashboardConfigRequest = Body(...)):
     """Get Lovelace dashboard configuration via WebSocket."""
     ws = await get_ws_client()
     url_path = request.dashboard_id if request.dashboard_id != "lovelace" else None
@@ -62,7 +62,7 @@ async def ha_get_dashboard_config(request: GetDashboardConfigRequest = Body(...)
 
 
 @router.post("/save_dashboard_config", operation_id="save_dashboard_config", summary="Save dashboard config")
-async def ha_save_dashboard_config(request: UpdateDashboardConfigRequest = Body(...)):
+async def save_dashboard_config(request: UpdateDashboardConfigRequest = Body(...)):
     """Save full Lovelace dashboard configuration via WebSocket."""
     ws = await get_ws_client()
     url_path = request.dashboard_id if request.dashboard_id != "lovelace" else None
@@ -79,7 +79,7 @@ async def ha_save_dashboard_config(request: UpdateDashboardConfigRequest = Body(
 
 
 @router.post("/manual_create_custom_card", operation_id="manual_create_custom_card", summary="Create custom card with dry-run support")
-async def ha_manual_create_custom_card(request: ManualCreateCustomCardRequest = Body(...)):
+async def manual_create_custom_card(request: ManualCreateCustomCardRequest = Body(...)):
     """Create a custom card on a Lovelace dashboard.
 
     Set dry_run=true to preview the card without saving. The response includes:
@@ -171,7 +171,7 @@ async def ha_manual_create_custom_card(request: ManualCreateCustomCardRequest = 
 
 
 @router.post("/manual_edit_custom_card", operation_id="manual_edit_custom_card", summary="Edit existing card")
-async def ha_manual_edit_custom_card(request: ManualEditCustomCardRequest = Body(...)):
+async def manual_edit_custom_card(request: ManualEditCustomCardRequest = Body(...)):
     """Edit an existing card on a Lovelace dashboard."""
     try:
         card_config = yaml.safe_load(request.card_yaml)
@@ -210,7 +210,7 @@ async def ha_manual_edit_custom_card(request: ManualEditCustomCardRequest = Body
 
 
 @router.post("/list_dashboard_views", operation_id="list_dashboard_views", summary="List views in a dashboard")
-async def ha_list_dashboard_views(request: GetDashboardConfigRequest = Body(...)):
+async def list_dashboard_views(request: GetDashboardConfigRequest = Body(...)):
     """List all views/tabs in a dashboard with their titles and card counts."""
     ws = await get_ws_client()
     url_path = request.dashboard_id if request.dashboard_id != "lovelace" else None
@@ -234,7 +234,7 @@ async def ha_list_dashboard_views(request: GetDashboardConfigRequest = Body(...)
 
 
 @router.post("/preview_card", operation_id="preview_card", summary="Preview card without saving (dry run)")
-async def ha_preview_card(request: ManualCreateCustomCardRequest = Body(...)):
+async def preview_card(request: ManualCreateCustomCardRequest = Body(...)):
     """Preview a card on a dashboard without saving. Returns the full config
     with the card inserted so you can verify before applying.
 

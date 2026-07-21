@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["automations"])
 
 @router.post("/list_automations", operation_id="list_automations", summary="List automations")
-async def ha_list_automations(request: ListAutomationsRequest = Body(...)):
+async def list_automations(request: ListAutomationsRequest = Body(...)):
     """List configured automations."""
     states = await ha_api.get_states()
     automations = [
@@ -32,7 +32,7 @@ async def ha_list_automations(request: ListAutomationsRequest = Body(...)):
     return SuccessResponse(message=f"Found {len(automations)} automations", data=automations)
 
 @router.post("/trigger_automation", operation_id="trigger_automation", summary="Trigger an automation")
-async def ha_trigger_automation(request: TriggerAutomationRequest = Body(...)):
+async def trigger_automation(request: TriggerAutomationRequest = Body(...)):
     """Trigger an automation."""
     result = await ha_api.call_service(
         "automation", "trigger", 
@@ -42,7 +42,7 @@ async def ha_trigger_automation(request: TriggerAutomationRequest = Body(...)):
     return SuccessResponse(message=f"Triggered {request.automation_id}", data=result)
 
 @router.post("/toggle_automation", operation_id="toggle_automation", summary="Enable or disable an automation")
-async def ha_toggle_automation(request: ToggleAutomationRequest = Body(...)):
+async def toggle_automation(request: ToggleAutomationRequest = Body(...)):
     """Enable or disable an automation."""
     service = "turn_on" if request.enable else "turn_off"
     await ha_api.call_service("automation", service, entity_id=request.automation_id)
@@ -50,7 +50,7 @@ async def ha_toggle_automation(request: ToggleAutomationRequest = Body(...)):
     return SuccessResponse(message=f"Automation {request.automation_id} {status}")
 
 @router.post("/get_automation_details", operation_id="get_automation_details", summary="Get automation details")
-async def ha_get_automation_details(request: GetAutomationDetailsRequest = Body(...)):
+async def get_automation_details(request: GetAutomationDetailsRequest = Body(...)):
     """Get detailed information about a specific automation."""
     state = await ha_api.get_states(request.automation_id)
     
@@ -71,7 +71,7 @@ async def ha_get_automation_details(request: GetAutomationDetailsRequest = Body(
     )
 
 @router.post("/reload_automations", operation_id="reload_automations", summary="Reload automations")
-async def ha_reload_automations(request: ReloadAutomationsRequest = Body(...)):
+async def reload_automations(request: ReloadAutomationsRequest = Body(...)):
     """Reload automations from YAML configuration."""
     if request.validate_only:
         # Note: In a real implementation this might check config first
@@ -83,7 +83,7 @@ async def ha_reload_automations(request: ReloadAutomationsRequest = Body(...)):
     return SuccessResponse(message="Automations reloaded successfully")
 
 @router.post("/create_automation", operation_id="create_automation", summary="Create a new automation")
-async def ha_create_automation(request: CreateAutomationRequest = Body(...)):
+async def create_automation(request: CreateAutomationRequest = Body(...)):
     """
     Create sophisticated automation with triggers, conditions, and actions.
     """
@@ -130,7 +130,7 @@ async def ha_create_automation(request: CreateAutomationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/update_automation", operation_id="update_automation", summary="Update an existing automation")
-async def ha_update_automation(request: UpdateAutomationRequest = Body(...)):
+async def update_automation(request: UpdateAutomationRequest = Body(...)):
     """Update existing automation."""
     try:
         automations_file = settings.HA_CONFIG_PATH / "automations.yaml"
@@ -233,7 +233,7 @@ async def ha_update_automation(request: UpdateAutomationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/delete_automation", operation_id="delete_automation", summary="Delete an automation")
-async def ha_delete_automation(request: DeleteAutomationRequest = Body(...)):
+async def delete_automation(request: DeleteAutomationRequest = Body(...)):
     """Delete automation from Home Assistant."""
     try:
         if not request.confirm:
@@ -281,7 +281,7 @@ async def ha_delete_automation(request: DeleteAutomationRequest = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/create_scene", operation_id="create_scene", summary="Create a scene")
-async def ha_create_scene(request: CreateSceneRequest = Body(...)):
+async def create_scene(request: CreateSceneRequest = Body(...)):
     """Create a temporary scene."""
     await ha_api.call_service(
         "scene", "create",
@@ -292,13 +292,13 @@ async def ha_create_scene(request: CreateSceneRequest = Body(...)):
     return SuccessResponse(message=f"Created scene {request.scene_id}")
 
 @router.post("/activate_scene", operation_id="activate_scene", summary="Activate a scene")
-async def ha_activate_scene(request: ActivateSceneRequest = Body(...)):
+async def activate_scene(request: ActivateSceneRequest = Body(...)):
     """Activate a scene."""
     await ha_api.call_service("scene", "turn_on", entity_id=request.scene_id)
     return SuccessResponse(message=f"Activated scene {request.scene_id}")
 
 @router.post("/list_scenes", operation_id="list_scenes", summary="List all scenes")
-async def ha_list_scenes(request: ListScenesRequest = Body(...)):
+async def list_scenes(request: ListScenesRequest = Body(...)):
     """List all configured scenes."""
     states = await ha_api.get_states()
     scenes = [

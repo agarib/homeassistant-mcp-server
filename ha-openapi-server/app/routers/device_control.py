@@ -10,7 +10,7 @@ from app.models.device import (
 router = APIRouter(tags=["device_control"])
 
 @router.post("/control_light", operation_id="control_light", summary="Control a light entity")
-async def ha_control_light(request: ControlLightRequest = Body(...)):
+async def control_light(request: ControlLightRequest = Body(...)):
     """Control light entities: turn on/off, adjust brightness, change colors."""
     service_data = {}
     if request.brightness is not None:
@@ -31,7 +31,7 @@ async def ha_control_light(request: ControlLightRequest = Body(...)):
     return SuccessResponse(message=f"Light {request.action} executed for {request.entity_id}", data=result)
 
 @router.post("/control_switch", operation_id="control_switch", summary="Control a switch entity")
-async def ha_control_switch(request: ControlSwitchRequest = Body(...)):
+async def control_switch(request: ControlSwitchRequest = Body(...)):
     """Control switch entities."""
     result = await ha_api.call_service(
         "switch",
@@ -41,7 +41,7 @@ async def ha_control_switch(request: ControlSwitchRequest = Body(...)):
     return SuccessResponse(message=f"Switch {request.action} executed for {request.entity_id}", data=result)
 
 @router.post("/control_cover", operation_id="control_cover", summary="Control a cover entity")
-async def ha_control_cover(request: ControlCoverRequest = Body(...)):
+async def control_cover(request: ControlCoverRequest = Body(...)):
     """Control covers (blinds, garage doors)."""
     service_data = {}
     if request.position is not None:
@@ -56,7 +56,7 @@ async def ha_control_cover(request: ControlCoverRequest = Body(...)):
     return SuccessResponse(message=f"Cover {request.action} executed for {request.entity_id}", data=result)
 
 @router.post("/control_climate", operation_id="control_climate", summary="Control a climate entity")
-async def ha_control_climate(request: ControlClimateRequest = Body(...)):
+async def control_climate(request: ControlClimateRequest = Body(...)):
     """Control climate/thermostat entities."""
     service_data = {}
     if request.temperature is not None:
@@ -75,7 +75,7 @@ async def ha_control_climate(request: ControlClimateRequest = Body(...)):
     return SuccessResponse(message=f"Climate {request.action} executed for {request.entity_id}", data=result)
 
 @router.post("/control_vacuum", operation_id="control_vacuum", summary="Control a vacuum entity")
-async def ha_control_vacuum(request: ControlVacuumRequest = Body(...)):
+async def control_vacuum(request: ControlVacuumRequest = Body(...)):
     """Control vacuum cleaners."""
     result = await ha_api.call_service(
         "vacuum",
@@ -85,7 +85,7 @@ async def ha_control_vacuum(request: ControlVacuumRequest = Body(...)):
     return SuccessResponse(message=f"Vacuum {request.action} executed for {request.entity_id}", data=result)
 
 @router.post("/control_fan", operation_id="control_fan", summary="Control a fan entity")
-async def ha_control_fan(request: ControlFanRequest = Body(...)):
+async def control_fan(request: ControlFanRequest = Body(...)):
     """Control fan entities."""
     service_data = {}
     if request.percentage is not None:
@@ -100,7 +100,7 @@ async def ha_control_fan(request: ControlFanRequest = Body(...)):
     return SuccessResponse(message=f"Fan {request.action} executed for {request.entity_id}", data=result)
 
 @router.post("/control_media_player", operation_id="control_media_player", summary="Control a media player")
-async def ha_control_media_player(request: ControlMediaRequest = Body(...)):
+async def control_media_player(request: ControlMediaRequest = Body(...)):
     """Control media players."""
     service_data = {}
     if request.volume_level is not None:
@@ -142,7 +142,7 @@ class UpdateDeviceRequest(BaseModel):
     area_id: Optional[str] = Field(None, description="Area ID to assign device to")
 
 @router.post("/update_device", operation_id="update_device", summary="Update device registry entry")
-async def ha_update_device(request: UpdateDeviceRequest = Body(...)):
+async def update_device(request: UpdateDeviceRequest = Body(...)):
     """Update a device in the HA device registry via WebSocket.
 
     Can rename (name_by_user) and/or reassign area (area_id).

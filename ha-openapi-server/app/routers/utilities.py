@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["utilities"])
 
 @router.post("/eval_template", operation_id="eval_template", summary="Evaluate Jinja2 template")
-async def ha_eval_template(request: EvalTemplateRequest = Body(...)):
+async def eval_template(request: EvalTemplateRequest = Body(...)):
     """Evaluate Jinja2 templates using Home Assistant's template engine."""
     try:
         # HA returns template results as plain text, not JSON
@@ -34,7 +34,7 @@ async def ha_eval_template(request: EvalTemplateRequest = Body(...)):
         raise HTTPException(status_code=500, detail=f"Template error: {str(e)}")
 
 @router.post("/config_set_yaml", operation_id="config_set_yaml", summary="Update raw YAML configuration")
-async def ha_config_set_yaml(request: ConfigSetYamlRequest = Body(...)):
+async def config_set_yaml(request: ConfigSetYamlRequest = Body(...)):
     """Update raw YAML configuration. This is a LAST-RESORT tool."""
     from pathlib import Path
     

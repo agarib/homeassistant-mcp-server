@@ -257,13 +257,13 @@ class FileManager:
             raise ValueError(f"Path {filepath} is outside config directory")
         return path
     
-    async def ha_read_file(self, filepath: str) -> str:
+    async def read_file(self, filepath: str) -> str:
         """Read file content"""
         path = self.ha_resolve_path(filepath)
         async with aiofiles.open(path, 'r', encoding='utf-8') as f:
             return await f.read()
     
-    async def ha_write_file(self, filepath: str, content: str) -> str:
+    async def write_file(self, filepath: str, content: str) -> str:
         """Write file content"""
         path = self.ha_resolve_path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -271,7 +271,7 @@ class FileManager:
             await f.write(content)
         return f"Successfully wrote {len(content)} bytes to {filepath}"
     
-    async def ha_list_directory(self, dirpath: str = "") -> List[Dict[str, str]]:
+    async def list_directory(self, dirpath: str = "") -> List[Dict[str, str]]:
         """List directory contents"""
         path = self.ha_resolve_path(dirpath)
         if not path.is_dir():
@@ -286,7 +286,7 @@ class FileManager:
             })
         return sorted(items, key=lambda x: (x["type"], x["name"]))
     
-    async def ha_delete_file(self, filepath: str) -> str:
+    async def delete_file(self, filepath: str) -> str:
         """Delete a file"""
         path = self.ha_resolve_path(filepath)
         if path.is_file():

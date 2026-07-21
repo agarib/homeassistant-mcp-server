@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["scripts"])
 
 @router.post("/config_get_script", operation_id="config_get_script", summary="Get Home Assistant script configuration")
-async def ha_config_get_script(request: GetScriptRequest = Body(...)):
+async def config_get_script(request: GetScriptRequest = Body(...)):
     """Retrieve script configuration from scripts.yaml or packages."""
     from pathlib import Path
     
@@ -54,7 +54,7 @@ async def ha_config_get_script(request: GetScriptRequest = Body(...)):
     raise HTTPException(status_code=404, detail=f"Script {script_id} not found")
 
 @router.post("/config_set_script", operation_id="config_set_script", summary="Create or update a Home Assistant script")
-async def ha_config_set_script(request: SetScriptRequest = Body(...)):
+async def config_set_script(request: SetScriptRequest = Body(...)):
     """Create or update a script in scripts.yaml."""
     from pathlib import Path
     import aiofiles
@@ -107,7 +107,7 @@ async def ha_config_set_script(request: SetScriptRequest = Body(...)):
     )
 
 @router.post("/config_remove_script", operation_id="config_remove_script", summary="Delete a Home Assistant script")
-async def ha_config_remove_script(request: RemoveScriptRequest = Body(...)):
+async def config_remove_script(request: RemoveScriptRequest = Body(...)):
     """Delete a script from scripts.yaml."""
     from pathlib import Path
     

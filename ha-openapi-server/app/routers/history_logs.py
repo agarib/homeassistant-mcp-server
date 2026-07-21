@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["history_logs"])
 
 @router.post("/get_history", operation_id="get_history", summary="Get entity history data")
-async def ha_get_history(request: GetHistoryRequest = Body(...)):
+async def get_history(request: GetHistoryRequest = Body(...)):
     """Retrieve historical state data for entities via HA REST /history/period.
 
     Uses the HA REST API (not the supervisor proxy) to fetch state history.
@@ -58,7 +58,7 @@ async def ha_get_history(request: GetHistoryRequest = Body(...)):
         raise HTTPException(status_code=500, detail=f"History fetch failed: {e}")
 
 @router.post("/get_automation_traces", operation_id="get_automation_traces", summary="Get automation execution traces")
-async def ha_get_automation_traces(request: GetAutomationTracesRequest = Body(...)):
+async def get_automation_traces(request: GetAutomationTracesRequest = Body(...)):
     """Retrieve execution traces for automations and scripts."""
     ws = await get_ws_client()
     

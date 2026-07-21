@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["entity_registry"])
 
 @router.post("/get_entity", operation_id="get_entity", summary="Get entity registry information")
-async def ha_get_entity(request: GetEntityRequest = Body(...)):
+async def get_entity(request: GetEntityRequest = Body(...)):
     """Get entity registry information for one or more entities."""
     ws = await get_ws_client()
     
@@ -33,7 +33,7 @@ async def ha_get_entity(request: GetEntityRequest = Body(...)):
         )
 
 @router.post("/set_entity", operation_id="set_entity", summary="Update entity registry properties")
-async def ha_set_entity(request: SetEntityRequest = Body(...)):
+async def set_entity(request: SetEntityRequest = Body(...)):
     """Update entity properties in the entity registry."""
     ws = await get_ws_client()
     
@@ -63,7 +63,7 @@ async def ha_set_entity(request: SetEntityRequest = Body(...)):
     )
 
 @router.post("/remove_entity", operation_id="remove_entity", summary="Remove entity from registry")
-async def ha_remove_entity(request: RemoveEntityRequest = Body(...)):
+async def remove_entity(request: RemoveEntityRequest = Body(...)):
     """Remove an entity from the Home Assistant entity registry."""
     ws = await get_ws_client()
     
@@ -78,7 +78,7 @@ async def ha_remove_entity(request: RemoveEntityRequest = Body(...)):
     )
 
 @router.post("/get_entity_exposure", operation_id="get_entity_exposure", summary="Get entity exposure settings")
-async def ha_get_entity_exposure(request: GetEntityExposureRequest = Body(...)):
+async def get_entity_exposure(request: GetEntityExposureRequest = Body(...)):
     """Get entity exposure settings for cloud/voice assistants."""
     try:
         # Read exposed entities from storage

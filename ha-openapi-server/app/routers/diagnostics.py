@@ -11,7 +11,7 @@ router = APIRouter(tags=["diagnostics"])
 
 
 @router.post("/get_config_entry_diagnostics", operation_id="get_config_entry_diagnostics", summary="Get config entry diagnostics")
-async def ha_get_config_entry_diagnostics(request: GetConfigEntryDiagnosticsRequest = Body(...)):
+async def get_config_entry_diagnostics(request: GetConfigEntryDiagnosticsRequest = Body(...)):
     """Download diagnostic data for a config entry."""
     url = f"{settings.HA_URL}/config/config_entries/entry/{request.entry_id}/diagnostics"
     response = await http_client.get(url)
@@ -26,7 +26,7 @@ async def ha_get_config_entry_diagnostics(request: GetConfigEntryDiagnosticsRequ
 
 
 @router.post("/get_device_diagnostics", operation_id="get_device_diagnostics", summary="Get device diagnostics")
-async def ha_get_device_diagnostics(request: GetDeviceDiagnosticsRequest = Body(...)):
+async def get_device_diagnostics(request: GetDeviceDiagnosticsRequest = Body(...)):
     """Download diagnostic data for a device."""
     # HA has no per-device diagnostics REST endpoint; diagnostics are per config entry.
     # We look up the device's config_entry_id, then download diagnostics for that entry.
@@ -59,7 +59,7 @@ async def ha_get_device_diagnostics(request: GetDeviceDiagnosticsRequest = Body(
 
 
 @router.post("/list_available_diagnostics", operation_id="list_available_diagnostics", summary="List available diagnostics")
-async def ha_list_available_diagnostics(request: ListAvailableDiagnosticsRequest = Body(...)):
+async def list_available_diagnostics(request: ListAvailableDiagnosticsRequest = Body(...)):
     """List integrations and devices that support diagnostics."""
     # Fetch config entries via REST (correct path: /config/config_entries/entry)
     config_entries = await ha_api.call_api("GET", "/config/config_entries/entry")
