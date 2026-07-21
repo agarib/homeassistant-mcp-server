@@ -114,26 +114,21 @@ server.py               # 3KB entry-point loader (auto-installs deps, runs uvico
 
 | Category | Count | Details |
 |----------|-------|---------|
-| **Core HA API** | 8 | Entity states, services, events, config |
-| **System** | 6 | Logs, notifications, health checks |
-| **Integrations** | 3 | Config entries, device diagnostics, repairs |
-| **Advanced API** | 3 | Templates, intents, validation |
-| **Automations** | 8 | Create, update, trigger, reload |
-| **File Operations** | 10 | Complete `/config` directory access |
-| **Add-on Management** | 9 | Install, start, stop, logs |
-| **Dashboards** | 12 | Lovelace management, HACS cards |
-| **Device Control** | 7 | Lights, switches, climate, covers |
-| **Logs & History** | 6 | Entity history, diagnostics |
-| **Discovery** | 4 | States, areas, devices, entities |
-| **Intelligence** | 4 | Context, activity, comfort analysis |
-| **Code Execution** | 3 | Python sandbox with pandas |
+| **Discovery** | 6 | Entity states, services, areas, devices |
+| **System** | 6 | Logs, health, config, notifications, repairs, restart |
+| **Device Control** | 8 | Lights, switches, climate, covers, fans, media, vacuums, registry |
+| **Automations** | 8 | List, create, update, delete, trigger, toggle, reload |
 | **Scenes** | 3 | Activate, create, list |
-| **Security** | 3 | Monitoring, anomaly detection |
-| **Camera VLM** | 3 | Vision AI analysis |
-| **Scripts** | 3 | Get, set, remove |
-| **Utilities** | 2 | Health check, API info |
-
-### Architecture
+| **File Management** | 10 | Read, write, delete, copy, move, list, search, tree, mkdir |
+| **Code Execution** | 3 | Python sandbox, state analysis, chart plotting |
+| **Dashboards** | 7 | List, get, save, create cards, preview, edit, views |
+| **Diagnostics** | 3 | Config entries, devices, available diagnostics |
+| **Intelligence** | 4 | Home context, activity, comfort, energy |
+| **Entity Registry** | 4 | Get, set, remove, exposure |
+| **History & Logs** | 2 | Entity history, automation traces |
+| **Scripts** | 3 | Get, create/update, delete |
+| **Utilities** | 2 | Template evaluation, YAML config |
+| **Info** | 2 | Root, health check |
 
 - **Runtime:** Python 3 with FastAPI + Uvicorn
 - **Authentication:** Automatic SUPERVISOR_TOKEN via s6-overlay
