@@ -1,44 +1,56 @@
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 
-# ============================================================================
-# File Management Request Models
-# ============================================================================
-
 class ReadFileRequest(BaseModel):
-    filepath: str = Field(..., description="Path to the file to read")
+    model_config = {"populate_by_name": True}
+    
+    filepath: str = Field(..., description="Path relative to /config", alias="file_path")
 
 class WriteFileRequest(BaseModel):
-    filepath: str = Field(..., description="Path to the file to write")
-    content: str = Field(..., description="Content to write to the file")
+    model_config = {"populate_by_name": True}
+    
+    filepath: str = Field(..., description="Path relative to /config", alias="file_path")
+    content: str = Field(..., description="File content to write")
 
 class ListDirectoryRequest(BaseModel):
-    dirpath: str = Field(..., description="Directory path to list")
+    model_config = {"populate_by_name": True}
+    
+    dirpath: str = Field("", description="Directory path relative to /config", alias="dir_path")
 
 class DeleteFileRequest(BaseModel):
-    filepath: str = Field(..., description="Path to the file to delete")
-
-class MakeDirectoryRequest(BaseModel):
-    dirpath: str = Field(..., description="Directory path to create")
+    model_config = {"populate_by_name": True}
+    
+    filepath: str = Field(..., description="File path to delete", alias="file_path")
 
 class MoveFileRequest(BaseModel):
+    model_config = {"populate_by_name": True}
+
     source_path: str = Field(..., description="Source file path")
     dest_path: str = Field(..., description="Destination file path")
 
 class CopyFileRequest(BaseModel):
+    model_config = {"populate_by_name": True}
+
     source_path: str = Field(..., description="Source file path")
     dest_path: str = Field(..., description="Destination file path")
 
+class MakeDirectoryRequest(BaseModel):
+    model_config = {"populate_by_name": True}
+
+    dirpath: str = Field(..., description="Directory path to create", alias="dir_path")
+
 class SearchFilesRequest(BaseModel):
-    path: str = Field(..., description="Root directory to search")
-    pattern: str = Field(..., description="Regex pattern to search for")
-    recursive: bool = Field(default=True, description="Search recursively")
+    pattern: str = Field(..., description="Regex pattern to search for (e.g., '*.yaml')")
+    path: str = Field(".", description="Starting directory path")
+    recursive: bool = Field(True, description="Search recursively")
 
 class ListFilesRequest(BaseModel):
-    path: str = Field(..., description="Directory to list files from")
-    extensions: Optional[List[str]] = Field(default=None, description="Filter by file extensions")
-    recursive: bool = Field(default=True, description="List recursively")
+    path: str = Field(".", description="Directory path")
+    extensions: Optional[list] = Field(None, description="Filter by extensions (e.g., ['.yaml', '.json'])")
+    recursive: bool = Field(False, description="List recursively")
 
 class GetDirectoryTreeRequest(BaseModel):
-    dirpath: str = Field("", description="Directory to get tree for")
-    depth: Optional[int] = Field(default=None, description="Maximum depth to traverse")
+    model_config = {"populate_by_name": True}
+    
+    dirpath: str = Field("", description="Root directory path", alias="dir_path")
+    depth: int = Field(2, description="Maximum recursion depth")
