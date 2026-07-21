@@ -1,7 +1,7 @@
 # OpenAPI Server Patches — Permanent Documentation
 
 ## Server Info
-- **Version**: 4.1.0 (HA update entity shows 4.0.27 due to HA registry not updated)
+- **Version**: 4.1.1 (HA update entity shows 4.0.27 due to HA registry not updated)
 - **Location**: HA addon `e115a97f_ha-openapi-server`, files at `/config/ha-openapi-server/`
 - **Restart**: `call_service("hassio", "addon_restart", addon="e115a97f_ha-openapi-server")`
 

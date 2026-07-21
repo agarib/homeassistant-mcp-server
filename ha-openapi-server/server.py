@@ -9,6 +9,39 @@ import os
 import sys
 import logging
 
+
+import subprocess  # auto-install fallback
+
+# -----------------------------------------------------------------------------
+# AUTO-INSTALL DEPENDENCIES (Self-Healing)
+# -----------------------------------------------------------------------------
+def install_dependencies():
+    """Install dependencies if they are missing (fallback for non-rebuilt containers)."""
+    missing = []
+    try:
+        import pydantic_settings
+    except ImportError:
+        missing.append("pydantic-settings>=2.12.0")
+        missing.append("pydantic>=2.0.0")
+    
+    for lib in ["pandas", "numpy", "matplotlib", "seaborn"]:
+        try:
+            __import__(lib)
+        except ImportError:
+            missing.append(lib)
+    
+    if missing:
+        print(f"🔧 Missing dependencies: {missing}. Auto-installing...")
+        try:
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install", 
+                "--break-system-packages"
+            ] + missing)
+            print("✅ Dependencies installed successfully.")
+        except Exception as e:
+            print(f"❌ Failed to auto-install dependencies: {e}")
+
+install_dependencies()
 # Add current directory to python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 

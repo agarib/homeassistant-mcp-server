@@ -1,4 +1,4 @@
-# Home Assistant OpenAPI Server v4.1.0
+# Home Assistant OpenAPI Server v4.1.1
 
 OpenAPI REST server with **71 endpoints** for device control, automation,
 file management, diagnostics, and AI-assisted Home Assistant interaction.
@@ -28,7 +28,7 @@ file management, diagnostics, and AI-assisted Home Assistant interaction.
 | Scripts | 3 | Get, create/update, delete scripts |
 | Utilities | 2 | Template evaluation, YAML config editing |
 
-## New in v4.1.0
+## New in v4.1.1
 
 - **12 new endpoints**: entity registry, history/logs, scripts, template, YAML config
 - **ha_ prefix removed** from all endpoints

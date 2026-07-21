@@ -1,6 +1,6 @@
 # Home Assistant OpenAPI Server
 
-[![Version](https://img.shields.io/badge/version-4.1.0-blue.svg)](https://github.com/agarib/homeassistant-mcp-server/releases)
+[![Version](https://img.shields.io/badge/version-4.1.1-blue.svg)](https://github.com/agarib/homeassistant-mcp-server/releases)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.10+-green.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
 
@@ -98,7 +98,7 @@ curl -X POST http://homeassistant.local:8001/list_devices \
 
 ```
 ha-openapi-server/
-├── config.yaml          # HA addon manifest (v4.1.0)
+├── config.yaml          # HA addon manifest (v4.1.1)
 ├── build.yaml            # HA build targets (arch base images)
 ├── Dockerfile            # Builds image, COPYs app/, runs from /app
 ├── requirements.txt      # Python deps (FastAPI, uvicorn, pandas, etc.)
@@ -167,7 +167,7 @@ The addon automatically retrieves the SUPERVISOR_TOKEN from Home Assistant's s6-
 
 ## 📋 Version History
 
-### v4.1.0 - Current
+### v4.1.1 - Current
 
 - **12 new endpoints**: entity registry, history/logs, scripts, template, YAML config
 - **`ha_` prefix removed** from all endpoints (modern bare syntax, HA 2024.10+)
@@ -186,6 +186,6 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ---
 
-**Version:** 4.1.0  
+**Version:** 4.1.1  
 **Author:** agarib  
 **Repository:** https://github.com/agarib/homeassistant-mcp-server
