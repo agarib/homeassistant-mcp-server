@@ -1,7 +1,7 @@
 name: Home Assistant OpenAPI Server
-version: "4.0.27"
+version: "4.1.0"
 slug: ha-openapi-server
-description: OpenAPI REST server with 97 endpoints for device control and automation
+description: OpenAPI REST server with 65 endpoints for comprehensive Home Assistant control, automation, diagnostics, and AI-assisted interaction
 url: https://github.com/agarib/homeassistant-mcp-server
 arch:
   - armhf
@@ -24,7 +24,6 @@ ports:
   8001/tcp: 8001
 ports_description:
   8001/tcp: OpenAPI Server HTTP port
-auth_api: true
 homeassistant_api: true
 hassio_api: true
 hassio_role: default
@@ -32,3 +31,4 @@ host_network: false
 ingress: false
 panel_icon: mdi:api
 panel_title: OpenAPI Server
+

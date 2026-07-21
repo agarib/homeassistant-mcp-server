@@ -2,8 +2,53 @@
 
 All notable changes to the Home Assistant OpenAPI Server project.
 
-## [4.0.27] - 2025-12-03
+## [4.1.0] - 2026-07-21
 
+### 🎉 Major Release — Modular Architecture + Modern Endpoints
+
+### Breaking Changes
+
+- **`ha_` prefix removed** from ALL endpoints. Modern bare syntax (HA 2024.10+):
+  - `ha_get_entity_state` → `/get_entity_state`
+  - `ha_control_light` → `/control_light`
+  - `ha_discover_devices` → `/list_devices`
+  - `ha_write_file` → `/write_file`
+  - All 65 endpoints now use bare paths
+
+### Architecture
+
+- **Modular refactor**: monolithic 222KB `server.py` split into:
+  - `app/main.py` — FastAPI app, CORS, router registration
+  - `app/routers/` — 13 router modules (device_control, discovery, automations, file_management, system, dashboards, diagnostics, intelligence, code_execution, entity_registry, history_logs, scripts, utilities)
+  - `app/models/` — 6 Pydantic model modules
+  - `app/core/` — config, clients (HA REST + WebSocket), logging
+- **`server.py`** is now a 3KB entry-point loader (auto-installs deps, runs uvicorn)
+- **Dockerfile** now `COPY`s app source into the image (self-contained rebuilds, no longer relies solely on `/config/ha-openapi-server/` mount)
+
+### Added (12 new endpoints)
+
+- Entity Registry: `/get_entity`, `/set_entity`, `/remove_entity`, `/get_entity_exposure`
+- History & Logs: `/get_history`, `/get_system_logs_diagnostics`, `/get_automation_traces`
+- Scripts: `/config_get_script`, `/config_set_script`, `/config_remove_script`
+- Utilities: `/eval_template`, `/config_set_yaml`
+
+### Fixed
+
+- `/get_history` — was a stub; now calls HA REST `/history/period/<ts>` with entity filtering
+- `/get_repairs` — new endpoint via WebSocket `repairs/list_issues`
+- `/update_device` — new endpoint via WebSocket `config/device_registry/update`
+- Dashboards rewritten: `/list_dashboards`, `/list_dashboard_views`, `/save_dashboard_config`, `/preview_card`, `/manual_create_custom_card` (with dry_run), `/manual_edit_custom_card`
+- Template eval: handles plain-text response correctly
+
+### Changed
+
+- **Pandas auto-install** at boot if missing
+- **Package automation support**: update/delete automations in packages/
+- **History via WebSocket**: uses `history/history_during_period`
+- Endpoint count: 97 → 65 (consolidated, removed redundant variants)
+
+
+## [4.0.27] - 2025-12-03
 ### 🎉 CRITICAL FIX - SUPERVISOR_TOKEN Injection Resolved
 
 **Problem Solved:** SUPERVISOR_TOKEN environment variable was empty despite correct addon configuration (auth_api: true, homeassistant_api: true, hassio_api: true), causing all 97 endpoints to fail with 401 Unauthorized errors.
