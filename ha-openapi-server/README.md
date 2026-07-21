@@ -1,6 +1,6 @@
 # Home Assistant OpenAPI Server v4.1.0
 
-OpenAPI REST server with **65 endpoints** for device control, automation,
+OpenAPI REST server with **71 endpoints** for device control, automation,
 file management, diagnostics, and AI-assisted Home Assistant interaction.
 
 ## Quick Links

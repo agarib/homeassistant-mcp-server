@@ -4,11 +4,11 @@
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.10+-green.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
 
-Production-ready REST API server with **65 unified endpoints** for comprehensive Home Assistant control, automation, diagnostics, and AI-assisted interaction. Endpoints use **modern bare syntax** (no `ha_` prefix) compatible with Home Assistant 2024.10+.
+Production-ready REST API server with **71 unified endpoints** for comprehensive Home Assistant control, automation, diagnostics, and AI-assisted interaction. Endpoints use **modern bare syntax** (no `ha_` prefix) compatible with Home Assistant 2024.10+.
 
 ## ✨ Features
 
-- **65 Production Endpoints** — Device control, automations, files, dashboards, diagnostics, intelligence, code execution
+- **71 Production Endpoints** — Device control, automations, files, dashboards, diagnostics, intelligence, code execution
 - **Modern Endpoint Naming** — Bare paths (`/get_entity_state`, `/control_light`); no `ha_` prefix (HA 2024.10+)
 - **Modular Architecture** — FastAPI app split into `app/routers/` (13 routers), `app/models/` (6 models), `app/core/` (config, clients, logging)
 - **WebSocket + REST Hybrid** — REST for state/control, WebSocket for dashboards, repairs, device registry, history
