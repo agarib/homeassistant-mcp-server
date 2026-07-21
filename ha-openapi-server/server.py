@@ -1,3 +1,4 @@
+# v4.1.0 cache-bust:20260722
 #!/usr/bin/env python3
 """
 Home Assistant OpenAPI Server v4.1.0
