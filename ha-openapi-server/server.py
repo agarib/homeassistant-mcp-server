@@ -45,7 +45,6 @@ install_dependencies()
 # Add current directory to python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Auto-install removed — deps are now installed at Docker build time via requirements.txt
 
 # Configure basic logging for startup before app takes over
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -2,6 +2,19 @@
 
 All notable changes to the Home Assistant OpenAPI Server project.
 
+
+## [4.1.1] - 2026-07-22
+
+### Fixed
+
+- **Dockerfile**: Use python3 -m pip (not pip3) to install deps into the correct Python interpreter
+- **Auto-install**: Restored dependency auto-install as a safety net at boot
+- **Model files**: Restored original Pydantic models with file_path/dir_path field aliases
+- **Function names**: Removed ha_ prefix from 73 internal Python function names (endpoint URLs unchanged)
+- **Endpoint count**: Updated all references from 65 to 71 across config.yaml, READMEs, CHANGELOGs, RELEASE
+- **Version cache**: Bumped to 4.1.1 to force fresh Docker image build
+
+
 ## [4.1.0] - 2026-07-21
 
 ### 🎉 Major Release — Modular Architecture + Modern Endpoints
