@@ -39,7 +39,7 @@ if __name__ == "__main__":
     logger.info(f"📡 Server will be available at http://{settings.HOST}:{settings.PORT}")
     logger.info(f"📖 API docs: http://{settings.HOST}:{settings.PORT}/docs")
     logger.info(f"🔧 OpenAPI spec: http://{settings.HOST}:{settings.PORT}/openapi.json")
-    logger.info("🎉 100% tool success rate - All 65 endpoints working!")
+    logger.info("🎉 100% tool success rate - All 71 endpoints working!")
     logger.info("🔌 WebSocket enabled for dashboard operations")
     
     uvicorn.run(

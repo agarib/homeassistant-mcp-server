@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # App Info
     APP_TITLE: str = "Home Assistant OpenAPI Server"
     APP_VERSION: str = "4.1.0"
-    APP_DESCRIPTION: str = "65 unified endpoints with WebSocket + REST hybrid architecture - WebSocket + REST hybrid architecture for comprehensive Home Assistant control."
+    APP_DESCRIPTION: str = "71 unified endpoints with WebSocket + REST hybrid architecture - WebSocket + REST hybrid architecture for comprehensive Home Assistant control."
     
     # Server Config
     PORT: int = 8001

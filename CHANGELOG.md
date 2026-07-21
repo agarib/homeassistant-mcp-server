@@ -13,7 +13,7 @@ All notable changes to the Home Assistant OpenAPI Server project.
   - `ha_control_light` → `/control_light`
   - `ha_discover_devices` → `/list_devices`
   - `ha_write_file` → `/write_file`
-  - All 65 endpoints now use bare paths
+  - All 71 endpoints now use bare paths
 
 ### Architecture
 
@@ -45,7 +45,7 @@ All notable changes to the Home Assistant OpenAPI Server project.
 - **Pandas auto-install** at boot if missing
 - **Package automation support**: update/delete automations in packages/
 - **History via WebSocket**: uses `history/history_during_period`
-- Endpoint count: 97 → 65 (consolidated, removed redundant variants)
+- Endpoint count: 97 → 71 (consolidated, removed redundant variants)
 
 
 ## [4.0.27] - 2025-12-03

@@ -10,13 +10,13 @@ This release marks a significant architectural evolution: from a monolithic 222K
 ## 🚀 Key Highlights
 
 ### ✨ Modern Endpoint Naming (Breaking Change)
-All 65 endpoints now use clean, modern bare paths:
+All 71 endpoints now use clean, modern bare paths:
 - `ha_get_entity_state` → `/get_entity_state`
 - `ha_control_light` → `/control_light`  
 - `ha_discover_devices` → `/list_devices`
 - `ha_write_file` → `/write_file`
 
-**No more `ha_` prefix needed!** All 65 endpoints now use bare syntax compatible with HA 2024.10+.
+**No more `ha_` prefix needed!** All 71 endpoints now use bare syntax compatible with HA 2024.10+.
 
 ### 📦 Modular Architecture
 
@@ -103,14 +103,14 @@ server.py               # 3KB entry-point loader (auto-installs deps, runs uvico
 ## 📉 Endpoint Consolidation
 
 - **Before:** 97 endpoints (many redundant)
-- **After:** 65 unified endpoints
+- **After:** 71 unified endpoints
 - **Removed:** 32 redundant/duplicate variants
 - **Added:** 12 new specialized endpoints
 - **Result:** Cleaner API, more maintainable codebase
 
 ## ✅ What's Included
 
-### Endpoints: 65 Production-Ready APIs
+### Endpoints: 71 Production-Ready APIs
 
 | Category | Count | Details |
 |----------|-------|---------|
@@ -214,7 +214,7 @@ curl http://homeassistant.local:8001/health
 {
   "status": "healthy",
   "version": "4.1.0",
-  "endpoints": 65
+  "endpoints": 71
 }
 ```
 
@@ -231,7 +231,7 @@ curl http://homeassistant.local:8001/health
 - **Modular architecture:** Faster load times, easier debugging
 - **Optimized routes:** Cleaner request handling
 - **Better error messages:** More detailed diagnostics
-- **Reduced endpoint count:** 97 → 65 (cleaner API surface)
+- **Reduced endpoint count:** 97 → 71 (cleaner API surface)
 
 ## 📞 Support
 
