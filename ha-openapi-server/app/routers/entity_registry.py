@@ -64,18 +64,63 @@ async def set_entity(request: SetEntityRequest = Body(...)):
 
 @router.post("/remove_entity", operation_id="remove_entity", summary="Remove entity from registry")
 async def remove_entity(request: RemoveEntityRequest = Body(...)):
-    """Remove an entity from the Home Assistant entity registry."""
+    """Remove an entity from the Home Assistant entity registry.
+
+    First attempts registry-level removal via the WebSocket API. If the entity
+    is not in the registry (e.g. it is a YAML-defined or state-only entity),
+    falls back to state-level deletion via the REST API so the caller does not
+    get a 500 for a legitimate entity that simply isn't registry-managed.
+    """
     ws = await get_ws_client()
-    
-    result = await ws.call_command(
-        "config/entity_registry/remove",
-        entity_id=request.entity_id
-    )
-    
-    return SuccessResponse(
-        message=f"Removed entity {request.entity_id}",
-        data=result
-    )
+
+    # Step 1: Try entity registry removal
+    try:
+        result = await ws.call_command(
+            "config/entity_registry/remove",
+            entity_id=request.entity_id
+        )
+        return SuccessResponse(
+            message=f"Removed entity {request.entity_id} from registry",
+            data=result
+        )
+    except Exception as e:
+        error_msg = str(e)
+        logger.warning(f"Registry removal failed for {request.entity_id}: {error_msg}")
+
+        # If the error is NOT "Entity not found", re-raise as 500
+        if "not found" not in error_msg.lower():
+            logger.error(f"Unexpected registry error for {request.entity_id}: {error_msg}", exc_info=True)
+            raise HTTPException(status_code=500, detail=error_msg)
+
+    # Step 2: Entity not in registry — check if it exists in the state machine
+    try:
+        state = await ha_api.get_states(request.entity_id)
+    except Exception as e:
+        logger.error(f"Failed to check state for {request.entity_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Entity not in registry and state lookup failed: {e}"
+        )
+
+    if not state:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Entity {request.entity_id} not found in registry or state machine"
+        )
+
+    # Step 3: Entity exists in state machine but not registry — delete via REST API
+    try:
+        await ha_api.call_api("DELETE", f"/states/{request.entity_id}")
+        return SuccessResponse(
+            message=f"Entity {request.entity_id} was not in the registry; removed from state machine",
+            data={"entity_id": request.entity_id, "registry": False, "state_removed": True}
+        )
+    except Exception as e:
+        logger.error(f"State removal failed for {request.entity_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Entity not in registry and state removal failed: {e}"
+        )
 
 @router.post("/get_entity_exposure", operation_id="get_entity_exposure", summary="Get entity exposure settings")
 async def get_entity_exposure(request: GetEntityExposureRequest = Body(...)):

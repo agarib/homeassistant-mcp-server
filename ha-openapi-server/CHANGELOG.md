@@ -3,6 +3,12 @@
 All notable changes to the Home Assistant OpenAPI Server project.
 
 
+## [4.1.2] - 2026-08-05
+
+### Fixed
+
+- **remove_entity endpoint**: Added try/except around entity registry WebSocket lookup — when an entity exists in HA's state machine but not in the entity registry, the endpoint now falls back to REST API state deletion instead of crashing with HTTP 500. Returns 404 when the entity is in neither the registry nor the state machine.
+
 ## [4.1.1] - 2026-07-22
 
 ### Fixed
