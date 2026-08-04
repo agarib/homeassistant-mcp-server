@@ -96,6 +96,12 @@ async def remove_entity(request: RemoveEntityRequest = Body(...)):
     try:
         state = await ha_api.get_states(request.entity_id)
     except Exception as e:
+        # httpx raises HTTPStatusError on 404 — treat as "not in state machine"
+        if "404" in str(e):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Entity {request.entity_id} not found in registry or state machine"
+            )
         logger.error(f"Failed to check state for {request.entity_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,

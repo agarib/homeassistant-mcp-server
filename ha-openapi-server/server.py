@@ -1,7 +1,7 @@
-# v4.1.2 cache-bust:20260805
+# v4.1.3 cache-bust:20260805b
 #!/usr/bin/env python3
 """
-Home Assistant OpenAPI Server v4.1.2
+Home Assistant OpenAPI Server v4.1.3
 Main entry point for the application.
 """
 import uvicorn
