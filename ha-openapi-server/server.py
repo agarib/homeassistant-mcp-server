@@ -1,49 +1,55 @@
-# v4.1.3 cache-bust:20260805b
-#!/usr/bin/env python3
-"""
-Home Assistant OpenAPI Server v4.1.3
-Main entry point for the application.
-"""
-import uvicorn
-import os
-import sys
-import logging
+# v4.1.4 cache-bust:20260826a
+ #!/usr/bin/env python3
+ """
+Home Assistant OpenAPI Server v4.1.4
+ Main entry point for the application.
+ """
+ import uvicorn
+ import os
+ import sys
+ import logging
 
 
-import subprocess  # auto-install fallback
+ import subprocess  # auto-install fallback
+ 
+# Load code from /config/ha-openapi-server (editable, no Docker rebuild needed)
+# Falls back to /app (Docker-baked) if /config/ is unavailable
+CONFIG_APP_PATH = "/config/ha-openapi-server"
+if os.path.isdir(os.path.join(CONFIG_APP_PATH, "app")):
+    sys.path.insert(0, CONFIG_APP_PATH)
+else:
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# -----------------------------------------------------------------------------
-# AUTO-INSTALL DEPENDENCIES (Self-Healing)
-# -----------------------------------------------------------------------------
-def install_dependencies():
-    """Install dependencies if they are missing (fallback for non-rebuilt containers)."""
-    missing = []
-    try:
-        import pydantic_settings
-    except ImportError:
-        missing.append("pydantic-settings>=2.12.0")
-        missing.append("pydantic>=2.0.0")
-    
-    for lib in ["pandas", "numpy", "matplotlib", "seaborn"]:
-        try:
-            __import__(lib)
-        except ImportError:
-            missing.append(lib)
-    
-    if missing:
-        print(f"🔧 Missing dependencies: {missing}. Auto-installing...")
-        try:
-            subprocess.check_call([
-                sys.executable, "-m", "pip", "install", 
-                "--break-system-packages"
-            ] + missing)
-            print("✅ Dependencies installed successfully.")
-        except Exception as e:
-            print(f"❌ Failed to auto-install dependencies: {e}")
-
-install_dependencies()
-# Add current directory to python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+ # -----------------------------------------------------------------------------
+ # AUTO-INSTALL DEPENDENCIES (Self-Healing)
+ # -----------------------------------------------------------------------------
+ def install_dependencies():
+     """Install dependencies if they are missing (fallback for non-rebuilt containers)."""
+     missing = []
+     try:
+         import pydantic_settings
+     except ImportError:
+         missing.append("pydantic-settings>=2.12.0")
+         missing.append("pydantic>=2.0.0")
+     
+     for lib in ["pandas", "numpy", "matplotlib", "seaborn"]:
+         try:
+             __import__(lib)
+         except ImportError:
+             missing.append(lib)
+     
+     if missing:
+         print(f"🔧 Missing dependencies: {missing}. Auto-installing...")
+         try:
+             subprocess.check_call([
+                 sys.executable, "-m", "pip", "install", 
+                 "--break-system-packages"
+             ] + missing)
+             print("✅ Dependencies installed successfully.")
+         except Exception as e:
+             print(f"❌ Failed to auto-install dependencies: {e}")
+ 
+ install_dependencies()
 
 
 # Configure basic logging for startup before app takes over

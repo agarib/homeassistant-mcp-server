@@ -294,6 +294,9 @@ class FileManager:
             return f"Deleted {filepath}"
         raise ValueError(f"{filepath} is not a file")
 
+    # Backward compatibility alias: older code calls resolve_path instead of ha_resolve_path
+    resolve_path = ha_resolve_path
+
 # Initialize global instances
 ha_api = HomeAssistantAPI()
 file_mgr = FileManager(settings.HA_CONFIG_PATH)
