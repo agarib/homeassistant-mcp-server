@@ -3,6 +3,15 @@
 All notable changes to the Home Assistant OpenAPI Server project.
 
 
+## [4.1.4] - 2026-08-26
+
+### Fixed
+
+- **FileManager.resolve_path AttributeError**: `file_management.py` router called `file_mgr.resolve_path()` (8 callsites: make_directory, move_file, copy_file, search_files, list_files, get_directory_tree) but `FileManager` class only defined `ha_resolve_path()`. Added `resolve_path = ha_resolve_path` backward-compat alias to `FileManager` class so all callers work.
+- **server.py IndentationError**: Clean rewrite of server.py — previous edit introduced leading spaces on lines 2-3 causing `IndentationError: unexpected indent` at boot, preventing the server from starting.
+- **server.py sys.path**: Server now prepends `/config/ha-openapi-server` to `sys.path` if the directory exists, so future source edits to `/config/` are loaded at runtime without requiring a Docker rebuild. Falls back to `/app/` (image-baked) if `/config/` is unavailable.
+- **config.py APP_VERSION**: Bumped hardcoded version string from 4.1.3 to 4.1.4.
+
 ## [4.1.3] - 2026-08-05
 
 ### Fixed
